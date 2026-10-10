@@ -10,83 +10,135 @@
 <style>
   :root {
     box-sizing: border-box;
-    --bg: #f3f1ea; --panel: #ffffff; --ink: #2b2a26; --muted: #6d6a60;
-    --line: #d9d5c8; --accent: #4f8a3c; --accent-ink: #ffffff;
+    --bg: #eeece4; --panel: #ffffff; --ink: #2b2a26; --muted: #6d6a60;
+    --line: #dcd8cb; --soft: #f6f4ee; --accent: #4f8a3c; --accent-ink: #ffffff;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #1d1f1b; --panel: #272a25; --ink: #eceadf; --muted: #a5a294; --line: #3b3e37; --accent: #7fbf68; --accent-ink: #14210f;
+      --bg: #181a16; --panel: #252823; --ink: #eceadf; --muted: #a5a294; --line: #3b3e37; --soft: #2e312b; --accent: #7fbf68; --accent-ink: #14210f;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #1d1f1b; --panel: #272a25; --ink: #eceadf; --muted: #a5a294; --line: #3b3e37; --accent: #7fbf68; --accent-ink: #14210f;
+    --bg: #181a16; --panel: #252823; --ink: #eceadf; --muted: #a5a294; --line: #3b3e37; --soft: #2e312b; --accent: #7fbf68; --accent-ink: #14210f;
   }
   *, *::before, *::after { box-sizing: border-box; }
+  html { height: 100%; }
   body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font-family: "Sarabun", "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif;
+    margin: 0; background: var(--bg); color: var(--ink); min-height: 100%;
+    font-family: "Sarabun", "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif; font-size: 15px;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
+  button { font: inherit; cursor: pointer; }
 
-  /* ---------- control panel ---------- */
-  .panel {
+  /* ---------- layout ---------- */
+  .app { display: block; }
+  .side {
     background: var(--panel); border-bottom: 1px solid var(--line);
-    padding: 14px 18px; display: flex; flex-direction: column; gap: 12px;
-    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
   }
-  @media (min-width: 900px) {
-    .panel { position: sticky; top: 0; z-index: 5; max-height: 60vh; overflow-y: auto; }
+  .brand { padding: 16px 18px 8px; }
+  .brand h1 { margin: 0; font-size: 20px; font-weight: 700; }
+  .brand p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  .stage { min-width: 0; }
+  @media (min-width: 960px) {
+    .app { display: grid; grid-template-columns: 380px 1fr; height: 100vh; height: 100dvh; }
+    .side { display: flex; flex-direction: column; height: 100%; border-bottom: 0; border-right: 1px solid var(--line); }
+    .side .scroll { flex: 1; overflow-y: auto; }
+    .stage { height: 100%; overflow-y: auto; }
   }
-  .panel h1 { font-size: 18px; margin: 0; font-weight: 700; }
-  .row { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end; }
-  .group-title { font-size: 13px; font-weight: 700; color: var(--muted); width: 100%; margin: 0; }
-  .field { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); }
+
+  /* ---------- sections ---------- */
+  details.sec { border-top: 1px solid var(--line); }
+  details.sec > summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px;
+    padding: 13px 18px; font-weight: 700; font-size: 15px; user-select: none;
+  }
+  details.sec > summary::-webkit-details-marker { display: none; }
+  details.sec > summary::after { content: "▾"; margin-left: auto; color: var(--muted); transition: transform .15s; }
+  details.sec:not([open]) > summary::after { transform: rotate(-90deg); }
+  details.sec > summary:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+  .step {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--accent-ink);
+    display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex: none;
+  }
+  .body { padding: 2px 18px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+  .field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
   .field input[type=number], .field select {
-    font: inherit; color: var(--ink); background: var(--bg);
-    border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; width: 100px;
+    font: inherit; font-size: 15px; color: var(--ink); background: var(--soft); width: 100%;
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
   }
-  .field select { width: auto; min-width: 150px; }
-  .field input[type=range] { width: 130px; accent-color: var(--accent); }
-  .field input[type=color] { width: 54px; height: 36px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
-  .field input:focus-visible, .field select:focus-visible, button:focus-visible, .check input:focus-visible, .drop:focus-within {
+  .field input[type=range] { width: 100%; accent-color: var(--accent); }
+  .field input[type=color] { width: 100%; height: 38px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+  .field input[type=file] { font-size: 13px; width: 100%; }
+  input:focus-visible, select:focus-visible, button:focus-visible, .drop:focus-within {
     outline: 3px solid var(--accent); outline-offset: 2px;
   }
-  .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); padding-bottom: 8px; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 14px; }
   .check input { width: 18px; height: 18px; accent-color: var(--accent); }
-  button { font: inherit; cursor: pointer; }
-  button.print {
-    font-weight: 700; background: var(--accent); color: var(--accent-ink);
-    border: 0; border-radius: 10px; padding: 11px 22px;
+  .hint { font-size: 13px; color: var(--muted); margin: 0; }
+  .hint b { color: var(--ink); }
+  .sub { font-size: 13px; font-weight: 700; color: var(--muted); margin: 4px 0 -4px; }
+
+  .stepper { display: flex; }
+  .stepper input { border-radius: 0 !important; text-align: center; min-width: 0; -moz-appearance: textfield; }
+  .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .stepper button {
+    width: 40px; flex: none; background: var(--soft); color: var(--ink); font-size: 18px; line-height: 1;
+    border: 1px solid var(--line);
   }
-  button.print:hover { filter: brightness(1.06); }
+  .stepper button:first-child { border-radius: 8px 0 0 8px; border-right: 0; }
+  .stepper button:last-child { border-radius: 0 8px 8px 0; border-left: 0; }
+  .stepper button:hover { background: var(--line); }
+
+  .drop {
+    display: flex; align-items: center; gap: 12px; border: 2px dashed var(--line); border-radius: 12px;
+    padding: 10px 12px; font-size: 13px; cursor: pointer; color: var(--muted); position: relative;
+  }
+  .drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .drop strong { color: var(--ink); font-size: 14px; }
+  .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .thumb { width: 38px; height: 52px; border-radius: 4px; background: var(--soft) center/cover no-repeat; border: 1px solid var(--line); flex: none; }
   button.ghost {
     background: transparent; color: var(--ink); border: 1px solid var(--line);
     border-radius: 8px; padding: 8px 14px; font-size: 14px;
   }
-  .drop {
-    display: flex; align-items: center; gap: 12px; border: 2px dashed var(--line); border-radius: 12px;
-    padding: 10px 14px; font-size: 14px; cursor: pointer; color: var(--muted); min-width: 280px;
-  }
-  .drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
-  .drop strong { color: var(--ink); }
-  .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-  .thumb { width: 36px; height: 50px; border-radius: 4px; background: var(--bg) center/cover no-repeat; border: 1px solid var(--line); flex: none; }
-  .img-only { display: none; }
-  body.has-img .img-only { display: flex; }
+  button.ghost:hover { background: var(--soft); }
+  body:not(.has-img) .img-only { display: none; }
   body.has-img .def-only { display: none; }
-  .fontlist { font-size: 13px; color: var(--muted); align-self: center; max-width: 320px; }
-  .info { font-size: 13px; color: var(--muted); }
-  .error { color: #c0392b; font-size: 13px; min-height: 1em; }
 
-  /* ---------- sheets ---------- */
+  /* ---------- action bar ---------- */
+  .actions {
+    border-top: 1px solid var(--line); background: var(--panel); padding: 12px 18px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    display: flex; flex-direction: column; gap: 8px; position: sticky; bottom: 0; z-index: 3;
+  }
+  .info { font-size: 13px; color: var(--muted); }
+  .error { color: #c0392b; font-size: 13px; }
+  .error:empty { display: none; }
+  button.print {
+    font-weight: 700; font-size: 16px; background: var(--accent); color: var(--accent-ink);
+    border: 0; border-radius: 12px; padding: 13px 20px; width: 100%;
+  }
+  button.print:hover { filter: brightness(1.07); }
+
+  /* ---------- preview ---------- */
+  .toolbar {
+    position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 18px;
+    display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted);
+  }
+  .toolbar label { display: flex; align-items: center; gap: 8px; }
+  .toolbar select {
+    font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; padding: 5px 8px;
+  }
   .sheets { padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
   .page {
-    background: #fff; position: relative; box-shadow: 0 2px 14px rgba(0,0,0,.18);
+    background: #fff; position: relative; box-shadow: 0 2px 14px rgba(0,0,0,.2);
     display: grid; justify-content: center; align-content: center; flex: none;
-    zoom: 0.55;
+    zoom: var(--z, 0.6);
   }
-  @media (max-width: 700px) { .page { zoom: 0.38; } }
-  @media (min-width: 1200px) { .page { zoom: 0.8; } }
 
   /* ---------- tag ---------- */
   .tag { position: relative; overflow: hidden; color: #2b2a26;
@@ -96,8 +148,10 @@
   .tag.cut { outline: 0.2mm dashed #9a9a9a; outline-offset: 0; }
   .art { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 
-  /* default design (58 x 90 mm design space) */
-  .art.def { background: linear-gradient(170deg, var(--body1), var(--body2)); display: flex; flex-direction: column; font-family: var(--text-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif; }
+  .art.def {
+    background: linear-gradient(170deg, var(--body1), var(--body2)); display: flex; flex-direction: column;
+    font-family: var(--text-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif;
+  }
   .band { height: 13mm; background: var(--band); position: relative; flex: none; }
   .hole {
     position: absolute; left: 50%; top: 5mm; width: 4.2mm; height: 4.2mm; margin-left: -2.1mm;
@@ -109,28 +163,32 @@
     width: 29mm; height: 29mm; border-radius: 50%; background: #fff;
     border: 0.7mm solid var(--ring); margin: 3.5mm auto 0;
     display: flex; align-items: center; justify-content: center;
-    font-family: var(--num-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif; font-weight: var(--num-weight, 700); color: #2d2b27; line-height: 1; flex: none;
+    font-family: var(--num-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif;
+    font-weight: var(--num-weight, 700); color: #2d2b27; line-height: 1; flex: none;
   }
   .circle.d1 { font-size: 20mm; } .circle.d2 { font-size: 17mm; } .circle.d3 { font-size: 13mm; }
+  .circle.d4 { font-size: 10.5mm; } .circle.d5 { font-size: 8.5mm; }
   .fields { padding: 3.5mm 5mm 0; display: flex; flex-direction: column; gap: 1.2mm; }
   .lbl { font-size: 4.4mm; font-weight: 500; line-height: 1.15; }
   .line { display: flex; align-items: flex-end; gap: 1.5mm; height: 6.5mm; font-size: 4.2mm; }
   .line i { flex: 1; border-bottom: 0.35mm solid #2b2a26; height: 100%; }
   .line span { line-height: 1.2; padding-bottom: 0.2mm; }
 
-  /* uploaded design */
   .art.img { background-repeat: no-repeat; background-size: 100% 100%; }
   body.has-img .tag { cursor: crosshair; }
   .num {
-    position: absolute; transform: translate(-50%, -50%); font-family: var(--num-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif; font-weight: var(--num-weight, 700); line-height: 1;
-    white-space: nowrap; display: flex; align-items: center; justify-content: center;
+    position: absolute; transform: translate(-50%, -50%); line-height: 1; white-space: nowrap;
+    font-family: var(--num-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif;
+    font-weight: var(--num-weight, 700); display: flex; align-items: center; justify-content: center;
   }
   .num.circ { background: #fff; border-radius: 50%; box-shadow: inset 0 0 0 0.6mm rgba(0,0,0,.18); }
 
   /* ---------- print ---------- */
   @media print {
-    .panel { display: none; }
+    .side, .toolbar { display: none !important; }
     body { background: #fff; }
+    .app { display: block; height: auto; }
+    .stage { height: auto; overflow: visible; }
     .sheets { padding: 0; gap: 0; display: block; }
     .page { zoom: 1; box-shadow: none; break-after: page; page-break-after: always; margin: 0; }
     .page:last-child { break-after: auto; page-break-after: auto; }
@@ -140,121 +198,187 @@
 </head>
 <body>
 
-<header class="panel">
-  <h1>สร้างป้ายติดต้นไม้ สำหรับพิมพ์</h1>
+<div class="app">
+  <aside class="side">
+    <header class="brand">
+      <h1>🌳 สร้างป้ายติดต้นไม้</h1>
+      <p>ตั้งค่าตามลำดับ 1 → 4 แล้วกดพิมพ์ ดูตัวอย่างได้ทันที</p>
+    </header>
 
-  <div class="row">
-    <p class="group-title">แบบป้าย</p>
-    <label class="drop" id="drop">
-      <span class="thumb" id="thumb"></span>
-      <span id="dropText"><strong>กดเลือกรูป หรือลากรูปมาวางที่นี่</strong><br>ใช้รูปป้ายเปล่า แล้วเลขจะถูกวางทับให้ (ไม่ใส่รูป = ใช้แบบเดิม)</span>
-      <input id="file" type="file" accept="image/*">
-    </label>
-    <button class="ghost img-only" id="reset" type="button">กลับไปใช้แบบเดิม</button>
-  </div>
+    <div class="scroll">
+      <!-- 1 numbers -->
+      <details class="sec" open>
+        <summary><span class="step">1</span>เลขที่ต้องการ</summary>
+        <div class="body">
+          <div class="grid2">
+            <label class="field">เริ่มที่เลข
+              <input id="from" type="number" min="1" max="500" value="1" inputmode="numeric">
+            </label>
+            <label class="field">ถึงเลข
+              <input id="to" type="number" min="1" max="500" value="27" inputmode="numeric">
+            </label>
+          </div>
+          <div class="field">จำนวนหลัก (เติมเลข 0 ข้างหน้า)
+            <div class="stepper">
+              <button type="button" data-target="digits" data-d="-1" aria-label="ลดจำนวนหลัก">−</button>
+              <input id="digits" type="number" min="1" max="5" value="1" inputmode="numeric">
+              <button type="button" data-target="digits" data-d="1" aria-label="เพิ่มจำนวนหลัก">+</button>
+            </div>
+          </div>
+          <p class="hint" id="padHint"></p>
+          <label class="field def-only">สีป้าย
+            <select id="color">
+              <option value="cycle">วนสี เขียว → เหลือง → ส้ม</option>
+              <option value="1">เขียวอ่อนทั้งหมด</option>
+              <option value="2">เหลืองอ่อนทั้งหมด</option>
+              <option value="3">ส้มอ่อนทั้งหมด</option>
+              <option value="range">แบ่งตามช่วงเลข (1–166 / 167–333 / 334–500)</option>
+            </select>
+          </label>
+        </div>
+      </details>
 
-  <div class="row img-only">
-    <p class="group-title">ตำแหน่งเลขบนรูป (คลิกบนป้ายตัวอย่างเพื่อวางเลขได้เลย)</p>
-    <label class="field">ซ้าย–ขวา (%)
-      <input id="nx" type="range" min="0" max="100" step="0.5" value="50">
-    </label>
-    <label class="field">บน–ล่าง (%)
-      <input id="ny" type="range" min="0" max="100" step="0.5" value="40">
-    </label>
-    <label class="field">ขนาดเลข
-      <input id="ns" type="range" min="5" max="80" step="1" value="30">
-    </label>
-    <label class="field">สีเลข
-      <input id="nc" type="color" value="#2d2b27">
-    </label>
-    <label class="field">มุมโค้ง (มม.)
-      <input id="rad" type="number" min="0" max="20" step="0.5" value="0">
-    </label>
-    <label class="check"><input id="circ" type="checkbox"> วงกลมขาวรองหลังเลข</label>
-  </div>
+      <!-- 2 design -->
+      <details class="sec" open>
+        <summary><span class="step">2</span>แบบป้าย</summary>
+        <div class="body">
+          <label class="drop" id="drop">
+            <span class="thumb" id="thumb"></span>
+            <span id="dropText"></span>
+            <input id="file" type="file" accept="image/*">
+          </label>
+          <button class="ghost img-only" id="reset" type="button">กลับไปใช้แบบเดิม</button>
 
-  <div class="row">
-    <p class="group-title">ฟอนต์</p>
-    <label class="field">ฟอนต์ของตัวเลข
-      <select id="numFont"></select>
-    </label>
-    <label class="field def-only">ฟอนต์ของข้อความบนป้าย
-      <select id="textFont"></select>
-    </label>
-    <label class="check"><input id="numBold" type="checkbox" checked> เลขตัวหนา</label>
-    <label class="field">นำเข้าฟอนต์ของคุณ
-      <input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" multiple>
-    </label>
-    <div class="fontlist" id="fontList">รองรับไฟล์ .ttf .otf .woff .woff2</div>
-  </div>
+          <div class="img-only" style="display:contents">
+            <p class="sub">ตำแหน่งเลขบนรูป</p>
+            <p class="hint">คลิกบนป้ายตัวอย่างตรงจุดที่ต้องการวางเลข หรือเลื่อนปรับเอง</p>
+            <label class="field">ซ้าย–ขวา
+              <input id="nx" type="range" min="0" max="100" step="0.5" value="50">
+            </label>
+            <label class="field">บน–ล่าง
+              <input id="ny" type="range" min="0" max="100" step="0.5" value="40">
+            </label>
+            <label class="field">ขนาดเลข
+              <input id="ns" type="range" min="5" max="80" step="1" value="30">
+            </label>
+            <div class="grid2">
+              <label class="field">สีเลข
+                <input id="nc" type="color" value="#2d2b27">
+              </label>
+              <label class="field">มุมโค้ง (มม.)
+                <input id="rad" type="number" min="0" max="20" step="0.5" value="0">
+              </label>
+            </div>
+            <label class="check"><input id="circ" type="checkbox"> วงกลมขาวรองหลังเลข</label>
+          </div>
 
-  <div class="row">
-    <p class="group-title">เลขที่ต้องการ</p>
-    <label class="field">เริ่มที่เลข
-      <input id="from" type="number" min="1" max="500" value="1" inputmode="numeric">
-    </label>
-    <label class="field">ถึงเลข
-      <input id="to" type="number" min="1" max="500" value="27" inputmode="numeric">
-    </label>
-    <label class="field def-only">สีป้าย
-      <select id="color">
-        <option value="cycle">วนสี เขียว → เหลือง → ส้ม</option>
-        <option value="1">เขียวอ่อนทั้งหมด</option>
-        <option value="2">เหลืองอ่อนทั้งหมด</option>
-        <option value="3">ส้มอ่อนทั้งหมด</option>
-        <option value="range">แบ่งตามช่วงเลข (1–166 / 167–333 / 334–500)</option>
-      </select>
-    </label>
-  </div>
+          <label class="check def-only"><input id="hole" type="checkbox" checked> วงกลมรูเจาะด้านบน</label>
+        </div>
+      </details>
 
-  <div class="row">
-    <p class="group-title">การจัดหน้ากระดาษ</p>
-    <label class="field">กระดาษ
-      <select id="orient">
-        <option value="portrait">A4 แนวตั้ง</option>
-        <option value="landscape">A4 แนวนอน</option>
-      </select>
-    </label>
-    <label class="field">จำนวนคอลัมน์
-      <input id="cols" type="number" min="1" max="10" value="3" inputmode="numeric">
-    </label>
-    <label class="field">จำนวนแถว
-      <input id="rows" type="number" min="1" max="10" value="3" inputmode="numeric">
-    </label>
-    <label class="field">ขอบกระดาษ (มม.)
-      <input id="margin" type="number" min="0" max="40" step="0.5" value="8" inputmode="decimal">
-    </label>
-    <label class="field">ช่องว่างระหว่างป้าย (มม.)
-      <input id="gap" type="number" min="0" max="20" step="0.5" value="3" inputmode="decimal">
-    </label>
-    <label class="check"><input id="cut" type="checkbox" checked> เส้นประสำหรับตัด</label>
-    <label class="check def-only"><input id="hole" type="checkbox" checked> วงกลมรูเจาะ</label>
-    <button class="print" id="printBtn" type="button">พิมพ์ / บันทึกเป็น PDF</button>
-  </div>
+      <!-- 3 fonts -->
+      <details class="sec">
+        <summary><span class="step">3</span>ฟอนต์</summary>
+        <div class="body">
+          <label class="field">ฟอนต์ของตัวเลข
+            <select id="numFont"></select>
+          </label>
+          <label class="field def-only">ฟอนต์ของข้อความบนป้าย
+            <select id="textFont"></select>
+          </label>
+          <label class="check"><input id="numBold" type="checkbox" checked> เลขตัวหนา</label>
+          <label class="field">นำเข้าฟอนต์ของคุณ (.ttf .otf .woff .woff2)
+            <input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" multiple>
+          </label>
+          <p class="hint" id="fontList">ฟอนต์ที่นำเข้าใช้ได้เฉพาะในหน้านี้ ถ้ารีเฟรชต้องนำเข้าใหม่</p>
+        </div>
+      </details>
 
-  <div class="info" id="info"></div>
-  <div class="error" id="err" role="alert"></div>
-</header>
+      <!-- 4 page -->
+      <details class="sec">
+        <summary><span class="step">4</span>จัดหน้ากระดาษ</summary>
+        <div class="body">
+          <label class="field">กระดาษ
+            <select id="orient">
+              <option value="portrait">A4 แนวตั้ง</option>
+              <option value="landscape">A4 แนวนอน</option>
+            </select>
+          </label>
+          <div class="grid2">
+            <div class="field">คอลัมน์ (ซ้าย–ขวา)
+              <div class="stepper">
+                <button type="button" data-target="cols" data-d="-1" aria-label="ลดคอลัมน์">−</button>
+                <input id="cols" type="number" min="1" max="10" value="3" inputmode="numeric" aria-label="จำนวนคอลัมน์">
+                <button type="button" data-target="cols" data-d="1" aria-label="เพิ่มคอลัมน์">+</button>
+              </div>
+            </div>
+            <div class="field">แถว (บน–ล่าง)
+              <div class="stepper">
+                <button type="button" data-target="rows" data-d="-1" aria-label="ลดแถว">−</button>
+                <input id="rows" type="number" min="1" max="10" value="3" inputmode="numeric" aria-label="จำนวนแถว">
+                <button type="button" data-target="rows" data-d="1" aria-label="เพิ่มแถว">+</button>
+              </div>
+            </div>
+          </div>
+          <p class="hint" id="perHint"></p>
+          <div class="grid2">
+            <label class="field">ขอบกระดาษ (มม.)
+              <input id="margin" type="number" min="0" max="40" step="0.5" value="8" inputmode="decimal">
+            </label>
+            <label class="field">ช่องว่างระหว่างป้าย (มม.)
+              <input id="gap" type="number" min="0" max="20" step="0.5" value="3" inputmode="decimal">
+            </label>
+          </div>
+          <label class="check"><input id="cut" type="checkbox" checked> เส้นประสำหรับตัด</label>
+        </div>
+      </details>
+    </div>
 
-<main class="sheets" id="sheets"></main>
+    <footer class="actions">
+      <div class="info" id="info"></div>
+      <div class="error" id="err" role="alert"></div>
+      <button class="print" id="printBtn" type="button">🖨️ พิมพ์ / บันทึกเป็น PDF</button>
+    </footer>
+  </aside>
+
+  <main class="stage" id="stage">
+    <div class="toolbar">
+      <span>ตัวอย่างหน้ากระดาษ</span>
+      <label>ขนาดตัวอย่าง
+        <select id="zoom">
+          <option value="fit">พอดีความกว้าง</option>
+          <option value="0.4">40%</option>
+          <option value="0.6">60%</option>
+          <option value="0.8">80%</option>
+          <option value="1">100%</option>
+        </select>
+      </label>
+    </div>
+    <div class="sheets" id="sheets"></div>
+  </main>
+</div>
 
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var el = {};
-  ['from','to','color','cut','hole','cols','rows','margin','gap','orient','nx','ny','ns','nc','rad','circ',
-   'file','drop','thumb','dropText','reset','sheets','info','err','printBtn','pageStyle',
-   'numFont','textFont','numBold','fontFile','fontList'].forEach(function (k) { el[k] = $(k); });
+  ['from','to','digits','padHint','perHint','color','cut','hole','cols','rows','margin','gap','orient',
+   'nx','ny','ns','nc','rad','circ','file','drop','thumb','dropText','reset','sheets','stage','zoom',
+   'info','err','printBtn','pageStyle','numFont','textFont','numBold','fontFile','fontList'
+  ].forEach(function (k) { el[k] = $(k); });
 
   var img = null; // {url, w, h, name}
+  var DROP_DEFAULT = '<strong>กดเลือกรูป หรือลากรูปมาวาง</strong><br>ใช้รูปป้ายเปล่า เลขจะวางทับให้<br>ไม่ใส่รูป = ใช้แบบเดิม';
+  el.dropText.innerHTML = DROP_DEFAULT;
 
   // ---------- fonts ----------
   var GOOGLE_FONTS = ['Sarabun','Prompt','Kanit','Mitr','Pridi','Athiti','K2D','Mali','Chakra Petch','Noto Sans Thai','Noto Serif Thai','Itim','Sriracha'];
   var imported = [];
-  function addFontOption(name, group) {
+  function q(name) { return '"' + name + '"'; }
+  function addFontOption(name) {
     [el.numFont, el.textFont].forEach(function (sel) {
       var o = document.createElement('option');
-      o.value = name; o.textContent = name; o.style.fontFamily = '"' + name + '"';
+      o.value = name; o.textContent = name; o.style.fontFamily = q(name);
       sel.appendChild(o);
     });
   }
@@ -262,9 +386,8 @@
   el.numFont.value = 'Sarabun'; el.textFont.value = 'Sarabun';
 
   function importFonts(files) {
-    var list = Array.prototype.slice.call(files);
-    var okNames = [], failed = [];
-    var jobs = list.map(function (file) {
+    var okCount = 0, failed = [];
+    var jobs = Array.prototype.slice.call(files).map(function (file) {
       var base = file.name.replace(/\.[^.]+$/, '').replace(/["'\\<>&]/g, '').trim() || 'ฟอนต์ที่นำเข้า';
       var name = base, k = 2;
       while (GOOGLE_FONTS.indexOf(name) >= 0 || imported.indexOf(name) >= 0) name = base + ' ' + (k++);
@@ -272,21 +395,23 @@
         var ff = new FontFace(name, buf);
         return ff.load().then(function () {
           document.fonts.add(ff);
-          imported.push(name); addFontOption(name);
-          okNames.push(name);
+          imported.push(name); addFontOption(name); okCount++;
           el.numFont.value = name; el.textFont.value = name;
         });
       }).catch(function () { failed.push(file.name); });
     });
     Promise.all(jobs).then(function () {
-      if (okNames.length) el.fontList.textContent = 'นำเข้าแล้ว: ' + imported.join(', ') + ' (ใช้ได้เฉพาะในหน้านี้ ถ้ารีเฟรชต้องนำเข้าใหม่)';
+      if (okCount) el.fontList.textContent = 'นำเข้าแล้ว: ' + imported.join(', ') + ' (ใช้ได้เฉพาะในหน้านี้ ถ้ารีเฟรชต้องนำเข้าใหม่)';
       if (failed.length) el.err.textContent = 'อ่านฟอนต์ไม่ได้: ' + failed.join(', ') + ' (ใช้ไฟล์ .ttf .otf .woff .woff2)';
       render();
     });
   }
-  el.fontFile.addEventListener('change', function () { if (el.fontFile.files.length) importFonts(el.fontFile.files); el.fontFile.value = ''; });
-  function q(name) { return '"' + name + '"'; }
+  el.fontFile.addEventListener('change', function () {
+    if (el.fontFile.files.length) importFonts(el.fontFile.files);
+    el.fontFile.value = '';
+  });
 
+  // ---------- helpers ----------
   function num(input, lo, hi, fallback) {
     var v = parseFloat(input.value);
     if (isNaN(v)) return fallback;
@@ -297,20 +422,31 @@
     if (mode === 'range') return n <= 166 ? 1 : (n <= 333 ? 2 : 3);
     return parseInt(mode, 10);
   }
+  function pad(n, d) { var s = String(n); while (s.length < d) s = '0' + s; return s; }
   var r2 = function (x) { return Math.round(x * 1000) / 1000; };
 
+  // ---------- render ----------
   function render() {
-    var a = parseInt(el.from.value, 10), b = parseInt(el.to.value, 10);
     el.err.textContent = '';
+    var a = parseInt(el.from.value, 10), b = parseInt(el.to.value, 10);
     var fail = function (msg) { el.err.textContent = msg; el.sheets.innerHTML = ''; el.info.textContent = ''; };
-    if (isNaN(a) || isNaN(b)) return fail('กรอกเลขเริ่มต้นและเลขสุดท้าย');
-    a = Math.min(500, Math.max(1, a)); b = Math.min(500, Math.max(1, b));
-    if (a > b) return fail('เลขเริ่มต้นต้องไม่มากกว่าเลขสุดท้าย (ช่วงที่ใช้ได้ 1–500)');
 
+    var digits = Math.round(num(el.digits, 1, 5, 1));
     var cols = Math.round(num(el.cols, 1, 10, 3)), rows = Math.round(num(el.rows, 1, 10, 3));
+    var per = cols * rows;
+    el.perHint.innerHTML = 'หน้าละ <b>' + per + '</b> ป้าย (' + cols + ' × ' + rows + ')';
+
+    if (isNaN(a) || isNaN(b)) { el.padHint.textContent = ''; return fail('กรอกเลขเริ่มต้นและเลขสุดท้าย'); }
+    a = Math.min(500, Math.max(1, a)); b = Math.min(500, Math.max(1, b));
+    if (a > b) { el.padHint.textContent = ''; return fail('เลขเริ่มต้นต้องไม่มากกว่าเลขสุดท้าย (ใช้ได้ 1–500)'); }
+    el.padHint.innerHTML = digits === 1
+      ? 'ไม่เติมเลข 0 · ตัวอย่าง: <b>' + a + ', ' + Math.min(b, a + 1) + ' … ' + b + '</b>'
+      : 'ตัวอย่าง: <b>' + pad(a, digits) + ', ' + pad(Math.min(b, a + 1), digits) + ' … ' + pad(b, digits) + '</b>';
+
     var margin = num(el.margin, 0, 40, 8), gap = num(el.gap, 0, 20, 3);
     var land = el.orient.value === 'landscape';
     var pw = land ? 297 : 210, ph = land ? 210 : 297;
+
     el.sheets.style.setProperty('--num-font', q(el.numFont.value));
     el.sheets.style.setProperty('--text-font', q(el.textFont.value));
     el.sheets.style.setProperty('--num-weight', el.numBold.checked ? '700' : '400');
@@ -321,15 +457,13 @@
     }
     el.pageStyle.textContent = '@page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 0; }';
 
-    // design space of one tag
     var W0 = img ? 100 : 58;
     var H0 = img ? 100 * img.h / img.w : 90;
     var cellW = (pw - 2 * margin - gap * (cols - 1)) / cols;
     var cellH = (ph - 2 * margin - gap * (rows - 1)) / rows;
-    if (cellW <= 5 || cellH <= 5) return fail('ป้ายเล็กเกินไป ลองลดจำนวนคอลัมน์/แถว หรือลดขอบกระดาษ');
+    if (cellW <= 5 || cellH <= 5) return fail('ป้ายเล็กเกินไป ลองลดคอลัมน์/แถว หรือลดขอบกระดาษ');
     var s = Math.min(cellW / W0, cellH / H0);
     var cardW = W0 * s, cardH = H0 * s;
-    var per = cols * rows;
 
     var nx = num(el.nx, 0, 100, 50), ny = num(el.ny, 0, 100, 40), ns = num(el.ns, 5, 80, 30);
     var radius = img ? num(el.rad, 0, 20, 0) : 4 * s;
@@ -340,21 +474,22 @@
     var tagStyle = 'width:' + r2(cardW) + 'mm;height:' + r2(cardH) + 'mm;border-radius:' + r2(radius) + 'mm';
     var artStyle = 'width:' + r2(W0) + 'mm;height:' + r2(H0) + 'mm;transform:scale(' + r2(s) + ')';
     var cut = el.cut.checked ? ' cut' : '';
+    var IMG_FACTOR = [1, 1, 0.85, 0.68, 0.55, 0.46];
+    var circ = el.circ.checked, holeOn = el.hole.checked;
 
     function tagHTML(n) {
-      var d = String(n).length;
+      var text = pad(n, digits), d = Math.min(5, text.length);
       if (img) {
-        var fs = W0 * ns / 100 * (d === 1 ? 1 : d === 2 ? 0.85 : 0.68);
-        var circ = el.circ.checked;
+        var fs = W0 * ns / 100 * IMG_FACTOR[d];
         var numStyle = 'left:' + nx + '%;top:' + ny + '%;font-size:' + r2(fs) + 'mm;color:' + el.nc.value +
           (circ ? ';width:' + r2(fs * 1.55) + 'mm;height:' + r2(fs * 1.55) + 'mm' : '');
         return '<div class="tag' + cut + '" style="' + tagStyle + '"><div class="art img" style="' + artStyle + '">' +
-          '<div class="num' + (circ ? ' circ' : '') + '" style="' + numStyle + '">' + n + '</div></div></div>';
+          '<div class="num' + (circ ? ' circ' : '') + '" style="' + numStyle + '">' + text + '</div></div></div>';
       }
       return '<div class="tag c' + colorFor(n, mode) + cut + '" style="' + tagStyle + '"><div class="art def" style="' + artStyle + '">' +
-        '<div class="band"><div class="hole' + (el.hole.checked ? '' : ' off') + '"></div></div>' +
+        '<div class="band"><div class="hole' + (holeOn ? '' : ' off') + '"></div></div>' +
         '<div class="title">ป้ายติดต้นไม้</div>' +
-        '<div class="circle d' + d + '">' + n + '</div>' +
+        '<div class="circle d' + d + '">' + text + '</div>' +
         '<div class="fields">' +
           '<div class="lbl">ความสูง</div><div class="line"><i></i><span>ม.</span></div>' +
           '<div class="lbl">เส้นผ่านศูนย์กลาง</div><div class="line"><i></i><span>ซม.</span></div>' +
@@ -374,10 +509,24 @@
       if (!rule) { rule = document.createElement('style'); rule.id = 'imgRule'; document.head.appendChild(rule); }
       rule.textContent = '.art.img{background-image:url("' + img.url + '")}';
     }
-    el.info.textContent = count + ' ป้าย · ' + Math.ceil(count / per) + ' หน้า (หน้าละ ' + per + ' ป้าย) · ขนาดป้ายจริงประมาณ ' +
+    el.info.textContent = count + ' ป้าย · ' + Math.ceil(count / per) + ' หน้า · ป้ายขนาดจริงประมาณ ' +
       (Math.round(cardW * 10) / 10) + '×' + (Math.round(cardH * 10) / 10) + ' มม.';
+    applyZoom(pw);
   }
 
+  function applyZoom(pw) {
+    var z = el.zoom.value, v;
+    if (z === 'fit') {
+      var avail = el.stage.clientWidth - 40;
+      v = Math.max(0.25, Math.min(1, avail / (pw * 96 / 25.4)));
+    } else v = parseFloat(z);
+    el.sheets.style.setProperty('--z', v);
+  }
+  window.addEventListener('resize', function () {
+    applyZoom(el.orient.value === 'landscape' ? 297 : 210);
+  });
+
+  // ---------- image template ----------
   function loadImage(file) {
     if (!file || !/^image\//.test(file.type)) { el.err.textContent = 'ไฟล์ต้องเป็นรูปภาพ (JPG, PNG, WEBP)'; return; }
     var url = URL.createObjectURL(file);
@@ -387,13 +536,13 @@
       img = { url: url, w: im.naturalWidth, h: im.naturalHeight, name: file.name };
       document.body.classList.add('has-img');
       el.thumb.style.backgroundImage = 'url("' + url + '")';
-      el.dropText.innerHTML = '<strong>' + file.name.replace(/[<>&]/g, '') + '</strong><br>กดหรือลากรูปใหม่มาวางเพื่อเปลี่ยน';
+      var safe = document.createElement('div'); safe.textContent = file.name;
+      el.dropText.innerHTML = '<strong>' + safe.innerHTML + '</strong><br>กดหรือลากรูปใหม่มาวางเพื่อเปลี่ยน';
       render();
     };
     im.onerror = function () { URL.revokeObjectURL(url); el.err.textContent = 'เปิดรูปนี้ไม่ได้ ลองไฟล์อื่น'; };
     im.src = url;
   }
-
   el.file.addEventListener('change', function () { if (el.file.files[0]) loadImage(el.file.files[0]); el.file.value = ''; });
   ['dragenter', 'dragover'].forEach(function (ev) {
     el.drop.addEventListener(ev, function (e) { e.preventDefault(); el.drop.classList.add('over'); });
@@ -410,12 +559,10 @@
     img = null;
     document.body.classList.remove('has-img');
     el.thumb.style.backgroundImage = '';
-    el.dropText.innerHTML = '<strong>กดเลือกรูป หรือลากรูปมาวางที่นี่</strong><br>ใช้รูปป้ายเปล่า แล้วเลขจะถูกวางทับให้ (ไม่ใส่รูป = ใช้แบบเดิม)';
+    el.dropText.innerHTML = DROP_DEFAULT;
     var rule = document.getElementById('imgRule'); if (rule) rule.textContent = '';
     render();
   });
-
-  // click a tag to place the number there
   el.sheets.addEventListener('click', function (e) {
     if (!img) return;
     var tag = e.target.closest('.tag'); if (!tag) return;
@@ -425,8 +572,17 @@
     render();
   });
 
-  ['from','to','cols','rows','margin','gap','nx','ny','ns','nc','rad'].forEach(function (k) { el[k].addEventListener('input', render); });
-  ['color','orient','cut','hole','circ','numFont','textFont','numBold'].forEach(function (k) { el[k].addEventListener('change', render); });
+  // ---------- steppers & events ----------
+  Array.prototype.forEach.call(document.querySelectorAll('.stepper button'), function (btn) {
+    btn.addEventListener('click', function () {
+      var input = $(btn.getAttribute('data-target'));
+      var v = (parseInt(input.value, 10) || 0) + parseInt(btn.getAttribute('data-d'), 10);
+      input.value = Math.min(parseInt(input.max, 10), Math.max(parseInt(input.min, 10), v));
+      render();
+    });
+  });
+  ['from','to','digits','cols','rows','margin','gap','nx','ny','ns','nc','rad'].forEach(function (k) { el[k].addEventListener('input', render); });
+  ['color','orient','cut','hole','circ','numFont','textFont','numBold','zoom'].forEach(function (k) { el[k].addEventListener('change', render); });
   el.printBtn.addEventListener('click', function () {
     if (el.err.textContent) return;
     var go = function () { window.print(); };
