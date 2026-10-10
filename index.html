@@ -6,18 +6,12 @@
 <title>เครื่องสร้างป้ายติดต้นไม้</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
+<style id="pageStyle">@page { size: A4 portrait; margin: 0; }</style>
 <style>
   :root {
     box-sizing: border-box;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    --bg: #f3f1ea;
-    --panel: #ffffff;
-    --ink: #2b2a26;
-    --muted: #6d6a60;
-    --line: #d9d5c8;
-    --accent: #4f8a3c;
-    --accent-ink: #ffffff;
+    --bg: #f3f1ea; --panel: #ffffff; --ink: #2b2a26; --muted: #6d6a60;
+    --line: #d9d5c8; --accent: #4f8a3c; --accent-ink: #ffffff;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -27,7 +21,6 @@
   :root[data-theme="dark"] {
     --bg: #1d1f1b; --panel: #272a25; --ink: #eceadf; --muted: #a5a294; --line: #3b3e37; --accent: #7fbf68; --accent-ink: #14210f;
   }
-  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   *, *::before, *::after { box-sizing: border-box; }
   body {
     margin: 0; background: var(--bg); color: var(--ink);
@@ -37,51 +30,73 @@
 
   /* ---------- control panel ---------- */
   .panel {
-    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
     background: var(--panel); border-bottom: 1px solid var(--line);
-    padding: 14px 18px; display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: end;
+    padding: 14px 18px; display: flex; flex-direction: column; gap: 12px;
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
   }
-  .panel h1 { font-size: 18px; margin: 0; width: 100%; font-weight: 700; }
+  @media (min-width: 900px) {
+    .panel { position: sticky; top: 0; z-index: 5; max-height: 60vh; overflow-y: auto; }
+  }
+  .panel h1 { font-size: 18px; margin: 0; font-weight: 700; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end; }
+  .group-title { font-size: 13px; font-weight: 700; color: var(--muted); width: 100%; margin: 0; }
   .field { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); }
   .field input[type=number], .field select {
     font: inherit; color: var(--ink); background: var(--bg);
-    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 110px;
+    border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; width: 100px;
   }
-  .field input:focus-visible, .field select:focus-visible, button:focus-visible, .check input:focus-visible {
+  .field select { width: auto; min-width: 150px; }
+  .field input[type=range] { width: 130px; accent-color: var(--accent); }
+  .field input[type=color] { width: 54px; height: 36px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+  .field input:focus-visible, .field select:focus-visible, button:focus-visible, .check input:focus-visible, .drop:focus-within {
     outline: 3px solid var(--accent); outline-offset: 2px;
   }
-  .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); padding-bottom: 9px; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); padding-bottom: 8px; }
   .check input { width: 18px; height: 18px; accent-color: var(--accent); }
+  button { font: inherit; cursor: pointer; }
   button.print {
-    font: inherit; font-weight: 700; background: var(--accent); color: var(--accent-ink);
-    border: 0; border-radius: 10px; padding: 11px 22px; cursor: pointer;
+    font-weight: 700; background: var(--accent); color: var(--accent-ink);
+    border: 0; border-radius: 10px; padding: 11px 22px;
   }
   button.print:hover { filter: brightness(1.06); }
-  .info { font-size: 13px; color: var(--muted); padding-bottom: 10px; }
-  .error { color: #c0392b; font-size: 13px; width: 100%; min-height: 1em; }
+  button.ghost {
+    background: transparent; color: var(--ink); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 14px; font-size: 14px;
+  }
+  .drop {
+    display: flex; align-items: center; gap: 12px; border: 2px dashed var(--line); border-radius: 12px;
+    padding: 10px 14px; font-size: 14px; cursor: pointer; color: var(--muted); min-width: 280px;
+  }
+  .drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .drop strong { color: var(--ink); }
+  .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .thumb { width: 36px; height: 50px; border-radius: 4px; background: var(--bg) center/cover no-repeat; border: 1px solid var(--line); flex: none; }
+  .img-only { display: none; }
+  body.has-img .img-only { display: flex; }
+  body.has-img .def-only { display: none; }
+  .info { font-size: 13px; color: var(--muted); }
+  .error { color: #c0392b; font-size: 13px; min-height: 1em; }
 
   /* ---------- sheets ---------- */
   .sheets { padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
   .page {
-    width: 210mm; height: 297mm; background: #fff; position: relative;
-    box-shadow: 0 2px 14px rgba(0,0,0,.18);
-    display: grid; grid-template-columns: repeat(3, 58mm); grid-auto-rows: 90mm;
-    justify-content: center; align-content: center; gap: 4mm;
+    background: #fff; position: relative; box-shadow: 0 2px 14px rgba(0,0,0,.18);
+    display: grid; justify-content: center; align-content: center; flex: none;
     zoom: 0.55;
   }
-  @media (max-width: 700px) { .page { zoom: 0.4; } }
+  @media (max-width: 700px) { .page { zoom: 0.38; } }
   @media (min-width: 1200px) { .page { zoom: 0.8; } }
 
   /* ---------- tag ---------- */
-  .tag {
-    --band: #5c9a4a; --body1: #cfe7bd; --body2: #b6d9a0; --ring: #5c9a4a;
-    position: relative; width: 58mm; height: 90mm; border-radius: 4mm; overflow: hidden;
-    background: linear-gradient(170deg, var(--body1), var(--body2));
-    color: #2b2a26; display: flex; flex-direction: column;
-  }
+  .tag { position: relative; overflow: hidden; color: #2b2a26;
+    --band: #5c9a4a; --body1: #cfe7bd; --body2: #b6d9a0; --ring: #5c9a4a; }
   .tag.c2 { --band: #e2b32a; --body1: #fbe7a0; --body2: #f6d96f; --ring: #d9a521; }
   .tag.c3 { --band: #e8905a; --body1: #f9d3b9; --body2: #f4b894; --ring: #e07f48; }
   .tag.cut { outline: 0.2mm dashed #9a9a9a; outline-offset: 0; }
+  .art { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+
+  /* default design (58 x 90 mm design space) */
+  .art.def { background: linear-gradient(170deg, var(--body1), var(--body2)); display: flex; flex-direction: column; }
   .band { height: 13mm; background: var(--band); position: relative; flex: none; }
   .hole {
     position: absolute; left: 50%; top: 5mm; width: 4.2mm; height: 4.2mm; margin-left: -2.1mm;
@@ -95,23 +110,30 @@
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; color: #2d2b27; line-height: 1; flex: none;
   }
-  .circle.d1 { font-size: 20mm; }
-  .circle.d2 { font-size: 17mm; }
-  .circle.d3 { font-size: 13mm; }
+  .circle.d1 { font-size: 20mm; } .circle.d2 { font-size: 17mm; } .circle.d3 { font-size: 13mm; }
   .fields { padding: 3.5mm 5mm 0; display: flex; flex-direction: column; gap: 1.2mm; }
   .lbl { font-size: 4.4mm; font-weight: 500; line-height: 1.15; }
   .line { display: flex; align-items: flex-end; gap: 1.5mm; height: 6.5mm; font-size: 4.2mm; }
   .line i { flex: 1; border-bottom: 0.35mm solid #2b2a26; height: 100%; }
   .line span { line-height: 1.2; padding-bottom: 0.2mm; }
 
+  /* uploaded design */
+  .art.img { background-repeat: no-repeat; background-size: 100% 100%; }
+  body.has-img .tag { cursor: crosshair; }
+  .num {
+    position: absolute; transform: translate(-50%, -50%); font-weight: 700; line-height: 1;
+    white-space: nowrap; display: flex; align-items: center; justify-content: center;
+  }
+  .num.circ { background: #fff; border-radius: 50%; box-shadow: inset 0 0 0 0.6mm rgba(0,0,0,.18); }
+
   /* ---------- print ---------- */
-  @page { size: A4 portrait; margin: 0; }
   @media print {
     .panel { display: none; }
     body { background: #fff; }
     .sheets { padding: 0; gap: 0; display: block; }
     .page { zoom: 1; box-shadow: none; break-after: page; page-break-after: always; margin: 0; }
     .page:last-child { break-after: auto; page-break-after: auto; }
+    .tag { cursor: auto; }
   }
 </style>
 </head>
@@ -120,24 +142,80 @@
 <header class="panel">
   <h1>สร้างป้ายติดต้นไม้ สำหรับพิมพ์</h1>
 
-  <label class="field">เริ่มที่เลข
-    <input id="from" type="number" min="1" max="500" value="1" inputmode="numeric">
-  </label>
-  <label class="field">ถึงเลข
-    <input id="to" type="number" min="1" max="500" value="27" inputmode="numeric">
-  </label>
-  <label class="field">สีป้าย
-    <select id="color">
-      <option value="cycle">วนสี เขียว → เหลือง → ส้ม</option>
-      <option value="1">เขียวอ่อนทั้งหมด</option>
-      <option value="2">เหลืองอ่อนทั้งหมด</option>
-      <option value="3">ส้มอ่อนทั้งหมด</option>
-      <option value="range">แบ่งตามช่วงเลข (1–166 / 167–333 / 334–500)</option>
-    </select>
-  </label>
-  <label class="check"><input id="cut" type="checkbox" checked> เส้นประสำหรับตัด</label>
-  <label class="check"><input id="hole" type="checkbox" checked> วงกลมรูเจาะ</label>
-  <button class="print" id="printBtn" type="button">พิมพ์ / บันทึกเป็น PDF</button>
+  <div class="row">
+    <p class="group-title">แบบป้าย</p>
+    <label class="drop" id="drop">
+      <span class="thumb" id="thumb"></span>
+      <span id="dropText"><strong>กดเลือกรูป หรือลากรูปมาวางที่นี่</strong><br>ใช้รูปป้ายเปล่า แล้วเลขจะถูกวางทับให้ (ไม่ใส่รูป = ใช้แบบเดิม)</span>
+      <input id="file" type="file" accept="image/*">
+    </label>
+    <button class="ghost img-only" id="reset" type="button">กลับไปใช้แบบเดิม</button>
+  </div>
+
+  <div class="row img-only">
+    <p class="group-title">ตำแหน่งเลขบนรูป (คลิกบนป้ายตัวอย่างเพื่อวางเลขได้เลย)</p>
+    <label class="field">ซ้าย–ขวา (%)
+      <input id="nx" type="range" min="0" max="100" step="0.5" value="50">
+    </label>
+    <label class="field">บน–ล่าง (%)
+      <input id="ny" type="range" min="0" max="100" step="0.5" value="40">
+    </label>
+    <label class="field">ขนาดเลข
+      <input id="ns" type="range" min="5" max="80" step="1" value="30">
+    </label>
+    <label class="field">สีเลข
+      <input id="nc" type="color" value="#2d2b27">
+    </label>
+    <label class="field">มุมโค้ง (มม.)
+      <input id="rad" type="number" min="0" max="20" step="0.5" value="0">
+    </label>
+    <label class="check"><input id="circ" type="checkbox"> วงกลมขาวรองหลังเลข</label>
+  </div>
+
+  <div class="row">
+    <p class="group-title">เลขที่ต้องการ</p>
+    <label class="field">เริ่มที่เลข
+      <input id="from" type="number" min="1" max="500" value="1" inputmode="numeric">
+    </label>
+    <label class="field">ถึงเลข
+      <input id="to" type="number" min="1" max="500" value="27" inputmode="numeric">
+    </label>
+    <label class="field def-only">สีป้าย
+      <select id="color">
+        <option value="cycle">วนสี เขียว → เหลือง → ส้ม</option>
+        <option value="1">เขียวอ่อนทั้งหมด</option>
+        <option value="2">เหลืองอ่อนทั้งหมด</option>
+        <option value="3">ส้มอ่อนทั้งหมด</option>
+        <option value="range">แบ่งตามช่วงเลข (1–166 / 167–333 / 334–500)</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="row">
+    <p class="group-title">การจัดหน้ากระดาษ</p>
+    <label class="field">กระดาษ
+      <select id="orient">
+        <option value="portrait">A4 แนวตั้ง</option>
+        <option value="landscape">A4 แนวนอน</option>
+      </select>
+    </label>
+    <label class="field">จำนวนคอลัมน์
+      <input id="cols" type="number" min="1" max="10" value="3" inputmode="numeric">
+    </label>
+    <label class="field">จำนวนแถว
+      <input id="rows" type="number" min="1" max="10" value="3" inputmode="numeric">
+    </label>
+    <label class="field">ขอบกระดาษ (มม.)
+      <input id="margin" type="number" min="0" max="40" step="0.5" value="8" inputmode="decimal">
+    </label>
+    <label class="field">ช่องว่างระหว่างป้าย (มม.)
+      <input id="gap" type="number" min="0" max="20" step="0.5" value="3" inputmode="decimal">
+    </label>
+    <label class="check"><input id="cut" type="checkbox" checked> เส้นประสำหรับตัด</label>
+    <label class="check def-only"><input id="hole" type="checkbox" checked> วงกลมรูเจาะ</label>
+    <button class="print" id="printBtn" type="button">พิมพ์ / บันทึกเป็น PDF</button>
+  </div>
+
   <div class="info" id="info"></div>
   <div class="error" id="err" role="alert"></div>
 </header>
@@ -146,55 +224,146 @@
 
 <script>
 (function () {
-  var PER_PAGE = 9;
   var $ = function (id) { return document.getElementById(id); };
-  var fromEl = $('from'), toEl = $('to'), colorEl = $('color'),
-      cutEl = $('cut'), holeEl = $('hole'), sheets = $('sheets'),
-      info = $('info'), err = $('err');
+  var el = {};
+  ['from','to','color','cut','hole','cols','rows','margin','gap','orient','nx','ny','ns','nc','rad','circ',
+   'file','drop','thumb','dropText','reset','sheets','info','err','printBtn','pageStyle'].forEach(function (k) { el[k] = $(k); });
 
+  var img = null; // {url, w, h, name}
+
+  function num(input, lo, hi, fallback) {
+    var v = parseFloat(input.value);
+    if (isNaN(v)) return fallback;
+    return Math.min(hi, Math.max(lo, v));
+  }
   function colorFor(n, mode) {
     if (mode === 'cycle') return ((n - 1) % 3) + 1;
     if (mode === 'range') return n <= 166 ? 1 : (n <= 333 ? 2 : 3);
     return parseInt(mode, 10);
   }
-
-  function tagHTML(n, mode) {
-    var d = String(n).length;
-    return '<div class="tag c' + colorFor(n, mode) + (cutEl.checked ? ' cut' : '') + '">' +
-      '<div class="band"><div class="hole' + (holeEl.checked ? '' : ' off') + '"></div></div>' +
-      '<div class="title">ป้ายติดต้นไม้</div>' +
-      '<div class="circle d' + d + '">' + n + '</div>' +
-      '<div class="fields">' +
-        '<div class="lbl">ความสูง</div>' +
-        '<div class="line"><i></i><span>ม.</span></div>' +
-        '<div class="lbl">เส้นผ่านศูนย์กลาง</div>' +
-        '<div class="line"><i></i><span>ซม.</span></div>' +
-      '</div></div>';
-  }
+  var r2 = function (x) { return Math.round(x * 1000) / 1000; };
 
   function render() {
-    var a = parseInt(fromEl.value, 10), b = parseInt(toEl.value, 10);
-    err.textContent = '';
-    if (isNaN(a) || isNaN(b)) { err.textContent = 'กรอกเลขเริ่มต้นและเลขสุดท้าย'; sheets.innerHTML = ''; info.textContent = ''; return; }
-    a = Math.min(500, Math.max(1, a));
-    b = Math.min(500, Math.max(1, b));
-    if (a > b) { err.textContent = 'เลขเริ่มต้นต้องไม่มากกว่าเลขสุดท้าย (ช่วงที่ใช้ได้ 1–500)'; sheets.innerHTML = ''; info.textContent = ''; return; }
+    var a = parseInt(el.from.value, 10), b = parseInt(el.to.value, 10);
+    el.err.textContent = '';
+    var fail = function (msg) { el.err.textContent = msg; el.sheets.innerHTML = ''; el.info.textContent = ''; };
+    if (isNaN(a) || isNaN(b)) return fail('กรอกเลขเริ่มต้นและเลขสุดท้าย');
+    a = Math.min(500, Math.max(1, a)); b = Math.min(500, Math.max(1, b));
+    if (a > b) return fail('เลขเริ่มต้นต้องไม่มากกว่าเลขสุดท้าย (ช่วงที่ใช้ได้ 1–500)');
 
-    var mode = colorEl.value, html = '', count = b - a + 1;
-    for (var n = a; n <= b; n++) {
-      if ((n - a) % PER_PAGE === 0) html += '<section class="page">';
-      html += tagHTML(n, mode);
-      if ((n - a) % PER_PAGE === PER_PAGE - 1 || n === b) html += '</section>';
+    var cols = Math.round(num(el.cols, 1, 10, 3)), rows = Math.round(num(el.rows, 1, 10, 3));
+    var margin = num(el.margin, 0, 40, 8), gap = num(el.gap, 0, 20, 3);
+    var land = el.orient.value === 'landscape';
+    var pw = land ? 297 : 210, ph = land ? 210 : 297;
+    el.pageStyle.textContent = '@page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 0; }';
+
+    // design space of one tag
+    var W0 = img ? 100 : 58;
+    var H0 = img ? 100 * img.h / img.w : 90;
+    var cellW = (pw - 2 * margin - gap * (cols - 1)) / cols;
+    var cellH = (ph - 2 * margin - gap * (rows - 1)) / rows;
+    if (cellW <= 5 || cellH <= 5) return fail('ป้ายเล็กเกินไป ลองลดจำนวนคอลัมน์/แถว หรือลดขอบกระดาษ');
+    var s = Math.min(cellW / W0, cellH / H0);
+    var cardW = W0 * s, cardH = H0 * s;
+    var per = cols * rows;
+
+    var nx = num(el.nx, 0, 100, 50), ny = num(el.ny, 0, 100, 40), ns = num(el.ns, 5, 80, 30);
+    var radius = img ? num(el.rad, 0, 20, 0) : 4 * s;
+    var mode = el.color.value;
+
+    var pageStyle = 'width:' + pw + 'mm;height:' + ph + 'mm;grid-template-columns:repeat(' + cols + ',' + r2(cardW) + 'mm);' +
+      'grid-auto-rows:' + r2(cardH) + 'mm;gap:' + gap + 'mm';
+    var tagStyle = 'width:' + r2(cardW) + 'mm;height:' + r2(cardH) + 'mm;border-radius:' + r2(radius) + 'mm';
+    var artStyle = 'width:' + r2(W0) + 'mm;height:' + r2(H0) + 'mm;transform:scale(' + r2(s) + ')';
+    var cut = el.cut.checked ? ' cut' : '';
+
+    function tagHTML(n) {
+      var d = String(n).length;
+      if (img) {
+        var fs = W0 * ns / 100 * (d === 1 ? 1 : d === 2 ? 0.85 : 0.68);
+        var circ = el.circ.checked;
+        var numStyle = 'left:' + nx + '%;top:' + ny + '%;font-size:' + r2(fs) + 'mm;color:' + el.nc.value +
+          (circ ? ';width:' + r2(fs * 1.55) + 'mm;height:' + r2(fs * 1.55) + 'mm' : '');
+        return '<div class="tag' + cut + '" style="' + tagStyle + '"><div class="art img" style="' + artStyle + '">' +
+          '<div class="num' + (circ ? ' circ' : '') + '" style="' + numStyle + '">' + n + '</div></div></div>';
+      }
+      return '<div class="tag c' + colorFor(n, mode) + cut + '" style="' + tagStyle + '"><div class="art def" style="' + artStyle + '">' +
+        '<div class="band"><div class="hole' + (el.hole.checked ? '' : ' off') + '"></div></div>' +
+        '<div class="title">ป้ายติดต้นไม้</div>' +
+        '<div class="circle d' + d + '">' + n + '</div>' +
+        '<div class="fields">' +
+          '<div class="lbl">ความสูง</div><div class="line"><i></i><span>ม.</span></div>' +
+          '<div class="lbl">เส้นผ่านศูนย์กลาง</div><div class="line"><i></i><span>ซม.</span></div>' +
+        '</div></div></div>';
     }
-    sheets.innerHTML = html;
-    info.textContent = count + ' ป้าย · ' + Math.ceil(count / PER_PAGE) + ' หน้า A4 (หน้าละ 9 ป้าย ขนาด 58×90 มม.)';
+
+    var html = '', count = b - a + 1;
+    for (var n = a; n <= b; n++) {
+      var i = n - a;
+      if (i % per === 0) html += '<section class="page" style="' + pageStyle + '">';
+      html += tagHTML(n);
+      if (i % per === per - 1 || n === b) html += '</section>';
+    }
+    el.sheets.innerHTML = html;
+    if (img) {
+      var rule = document.getElementById('imgRule');
+      if (!rule) { rule = document.createElement('style'); rule.id = 'imgRule'; document.head.appendChild(rule); }
+      rule.textContent = '.art.img{background-image:url("' + img.url + '")}';
+    }
+    el.info.textContent = count + ' ป้าย · ' + Math.ceil(count / per) + ' หน้า (หน้าละ ' + per + ' ป้าย) · ขนาดป้ายจริงประมาณ ' +
+      (Math.round(cardW * 10) / 10) + '×' + (Math.round(cardH * 10) / 10) + ' มม.';
   }
 
-  [fromEl, toEl].forEach(function (el) { el.addEventListener('input', render); });
-  colorEl.addEventListener('change', render);
-  cutEl.addEventListener('change', render);
-  holeEl.addEventListener('change', render);
-  $('printBtn').addEventListener('click', function () { if (!err.textContent) window.print(); });
+  function loadImage(file) {
+    if (!file || !/^image\//.test(file.type)) { el.err.textContent = 'ไฟล์ต้องเป็นรูปภาพ (JPG, PNG, WEBP)'; return; }
+    var url = URL.createObjectURL(file);
+    var im = new Image();
+    im.onload = function () {
+      if (img) URL.revokeObjectURL(img.url);
+      img = { url: url, w: im.naturalWidth, h: im.naturalHeight, name: file.name };
+      document.body.classList.add('has-img');
+      el.thumb.style.backgroundImage = 'url("' + url + '")';
+      el.dropText.innerHTML = '<strong>' + file.name.replace(/[<>&]/g, '') + '</strong><br>กดหรือลากรูปใหม่มาวางเพื่อเปลี่ยน';
+      render();
+    };
+    im.onerror = function () { URL.revokeObjectURL(url); el.err.textContent = 'เปิดรูปนี้ไม่ได้ ลองไฟล์อื่น'; };
+    im.src = url;
+  }
+
+  el.file.addEventListener('change', function () { if (el.file.files[0]) loadImage(el.file.files[0]); el.file.value = ''; });
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    el.drop.addEventListener(ev, function (e) { e.preventDefault(); el.drop.classList.add('over'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    el.drop.addEventListener(ev, function (e) { e.preventDefault(); el.drop.classList.remove('over'); });
+  });
+  el.drop.addEventListener('drop', function (e) {
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) loadImage(f);
+  });
+  el.reset.addEventListener('click', function () {
+    if (img) URL.revokeObjectURL(img.url);
+    img = null;
+    document.body.classList.remove('has-img');
+    el.thumb.style.backgroundImage = '';
+    el.dropText.innerHTML = '<strong>กดเลือกรูป หรือลากรูปมาวางที่นี่</strong><br>ใช้รูปป้ายเปล่า แล้วเลขจะถูกวางทับให้ (ไม่ใส่รูป = ใช้แบบเดิม)';
+    var rule = document.getElementById('imgRule'); if (rule) rule.textContent = '';
+    render();
+  });
+
+  // click a tag to place the number there
+  el.sheets.addEventListener('click', function (e) {
+    if (!img) return;
+    var tag = e.target.closest('.tag'); if (!tag) return;
+    var r = tag.getBoundingClientRect();
+    el.nx.value = Math.round(((e.clientX - r.left) / r.width) * 200) / 2;
+    el.ny.value = Math.round(((e.clientY - r.top) / r.height) * 200) / 2;
+    render();
+  });
+
+  ['from','to','cols','rows','margin','gap','nx','ny','ns','nc','rad'].forEach(function (k) { el[k].addEventListener('input', render); });
+  ['color','orient','cut','hole','circ'].forEach(function (k) { el[k].addEventListener('change', render); });
+  el.printBtn.addEventListener('click', function () { if (!el.err.textContent) window.print(); });
 
   render();
 })();
