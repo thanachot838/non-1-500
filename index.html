@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>เครื่องสร้างป้ายติดต้นไม้</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&family=Prompt:wght@400;500;700&family=Kanit:wght@400;500;700&family=Mitr:wght@400;500;700&family=Pridi:wght@400;500;700&family=Athiti:wght@400;500;700&family=K2D:wght@400;500;700&family=Mali:wght@400;500;700&family=Chakra+Petch:wght@400;500;700&family=Noto+Sans+Thai:wght@400;500;700&family=Noto+Serif+Thai:wght@400;500;700&family=Itim&family=Sriracha&display=swap" rel="stylesheet">
 <style id="pageStyle">@page { size: A4 portrait; margin: 0; }</style>
 <style>
   :root {
@@ -74,6 +74,7 @@
   .img-only { display: none; }
   body.has-img .img-only { display: flex; }
   body.has-img .def-only { display: none; }
+  .fontlist { font-size: 13px; color: var(--muted); align-self: center; max-width: 320px; }
   .info { font-size: 13px; color: var(--muted); }
   .error { color: #c0392b; font-size: 13px; min-height: 1em; }
 
@@ -96,7 +97,7 @@
   .art { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 
   /* default design (58 x 90 mm design space) */
-  .art.def { background: linear-gradient(170deg, var(--body1), var(--body2)); display: flex; flex-direction: column; }
+  .art.def { background: linear-gradient(170deg, var(--body1), var(--body2)); display: flex; flex-direction: column; font-family: var(--text-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif; }
   .band { height: 13mm; background: var(--band); position: relative; flex: none; }
   .hole {
     position: absolute; left: 50%; top: 5mm; width: 4.2mm; height: 4.2mm; margin-left: -2.1mm;
@@ -108,7 +109,7 @@
     width: 29mm; height: 29mm; border-radius: 50%; background: #fff;
     border: 0.7mm solid var(--ring); margin: 3.5mm auto 0;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; color: #2d2b27; line-height: 1; flex: none;
+    font-family: var(--num-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif; font-weight: var(--num-weight, 700); color: #2d2b27; line-height: 1; flex: none;
   }
   .circle.d1 { font-size: 20mm; } .circle.d2 { font-size: 17mm; } .circle.d3 { font-size: 13mm; }
   .fields { padding: 3.5mm 5mm 0; display: flex; flex-direction: column; gap: 1.2mm; }
@@ -121,7 +122,7 @@
   .art.img { background-repeat: no-repeat; background-size: 100% 100%; }
   body.has-img .tag { cursor: crosshair; }
   .num {
-    position: absolute; transform: translate(-50%, -50%); font-weight: 700; line-height: 1;
+    position: absolute; transform: translate(-50%, -50%); font-family: var(--num-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif; font-weight: var(--num-weight, 700); line-height: 1;
     white-space: nowrap; display: flex; align-items: center; justify-content: center;
   }
   .num.circ { background: #fff; border-radius: 50%; box-shadow: inset 0 0 0 0.6mm rgba(0,0,0,.18); }
@@ -170,6 +171,21 @@
       <input id="rad" type="number" min="0" max="20" step="0.5" value="0">
     </label>
     <label class="check"><input id="circ" type="checkbox"> วงกลมขาวรองหลังเลข</label>
+  </div>
+
+  <div class="row">
+    <p class="group-title">ฟอนต์</p>
+    <label class="field">ฟอนต์ของตัวเลข
+      <select id="numFont"></select>
+    </label>
+    <label class="field def-only">ฟอนต์ของข้อความบนป้าย
+      <select id="textFont"></select>
+    </label>
+    <label class="check"><input id="numBold" type="checkbox" checked> เลขตัวหนา</label>
+    <label class="field">นำเข้าฟอนต์ของคุณ
+      <input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" multiple>
+    </label>
+    <div class="fontlist" id="fontList">รองรับไฟล์ .ttf .otf .woff .woff2</div>
   </div>
 
   <div class="row">
@@ -227,9 +243,49 @@
   var $ = function (id) { return document.getElementById(id); };
   var el = {};
   ['from','to','color','cut','hole','cols','rows','margin','gap','orient','nx','ny','ns','nc','rad','circ',
-   'file','drop','thumb','dropText','reset','sheets','info','err','printBtn','pageStyle'].forEach(function (k) { el[k] = $(k); });
+   'file','drop','thumb','dropText','reset','sheets','info','err','printBtn','pageStyle',
+   'numFont','textFont','numBold','fontFile','fontList'].forEach(function (k) { el[k] = $(k); });
 
   var img = null; // {url, w, h, name}
+
+  // ---------- fonts ----------
+  var GOOGLE_FONTS = ['Sarabun','Prompt','Kanit','Mitr','Pridi','Athiti','K2D','Mali','Chakra Petch','Noto Sans Thai','Noto Serif Thai','Itim','Sriracha'];
+  var imported = [];
+  function addFontOption(name, group) {
+    [el.numFont, el.textFont].forEach(function (sel) {
+      var o = document.createElement('option');
+      o.value = name; o.textContent = name; o.style.fontFamily = '"' + name + '"';
+      sel.appendChild(o);
+    });
+  }
+  GOOGLE_FONTS.forEach(addFontOption);
+  el.numFont.value = 'Sarabun'; el.textFont.value = 'Sarabun';
+
+  function importFonts(files) {
+    var list = Array.prototype.slice.call(files);
+    var okNames = [], failed = [];
+    var jobs = list.map(function (file) {
+      var base = file.name.replace(/\.[^.]+$/, '').replace(/["'\\<>&]/g, '').trim() || 'ฟอนต์ที่นำเข้า';
+      var name = base, k = 2;
+      while (GOOGLE_FONTS.indexOf(name) >= 0 || imported.indexOf(name) >= 0) name = base + ' ' + (k++);
+      return file.arrayBuffer().then(function (buf) {
+        var ff = new FontFace(name, buf);
+        return ff.load().then(function () {
+          document.fonts.add(ff);
+          imported.push(name); addFontOption(name);
+          okNames.push(name);
+          el.numFont.value = name; el.textFont.value = name;
+        });
+      }).catch(function () { failed.push(file.name); });
+    });
+    Promise.all(jobs).then(function () {
+      if (okNames.length) el.fontList.textContent = 'นำเข้าแล้ว: ' + imported.join(', ') + ' (ใช้ได้เฉพาะในหน้านี้ ถ้ารีเฟรชต้องนำเข้าใหม่)';
+      if (failed.length) el.err.textContent = 'อ่านฟอนต์ไม่ได้: ' + failed.join(', ') + ' (ใช้ไฟล์ .ttf .otf .woff .woff2)';
+      render();
+    });
+  }
+  el.fontFile.addEventListener('change', function () { if (el.fontFile.files.length) importFonts(el.fontFile.files); el.fontFile.value = ''; });
+  function q(name) { return '"' + name + '"'; }
 
   function num(input, lo, hi, fallback) {
     var v = parseFloat(input.value);
@@ -255,6 +311,14 @@
     var margin = num(el.margin, 0, 40, 8), gap = num(el.gap, 0, 20, 3);
     var land = el.orient.value === 'landscape';
     var pw = land ? 297 : 210, ph = land ? 210 : 297;
+    el.sheets.style.setProperty('--num-font', q(el.numFont.value));
+    el.sheets.style.setProperty('--text-font', q(el.textFont.value));
+    el.sheets.style.setProperty('--num-weight', el.numBold.checked ? '700' : '400');
+    if (document.fonts && document.fonts.load) {
+      document.fonts.load('400 20px ' + q(el.numFont.value));
+      document.fonts.load('700 20px ' + q(el.numFont.value));
+      document.fonts.load('500 20px ' + q(el.textFont.value));
+    }
     el.pageStyle.textContent = '@page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 0; }';
 
     // design space of one tag
@@ -362,8 +426,12 @@
   });
 
   ['from','to','cols','rows','margin','gap','nx','ny','ns','nc','rad'].forEach(function (k) { el[k].addEventListener('input', render); });
-  ['color','orient','cut','hole','circ'].forEach(function (k) { el[k].addEventListener('change', render); });
-  el.printBtn.addEventListener('click', function () { if (!el.err.textContent) window.print(); });
+  ['color','orient','cut','hole','circ','numFont','textFont','numBold'].forEach(function (k) { el[k].addEventListener('change', render); });
+  el.printBtn.addEventListener('click', function () {
+    if (el.err.textContent) return;
+    var go = function () { window.print(); };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
+  });
 
   render();
 })();
