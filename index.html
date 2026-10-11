@@ -32,16 +32,13 @@
 
   /* ---------- layout ---------- */
   .app { display: block; }
-  .side {
-    background: var(--panel); border-bottom: 1px solid var(--line);
-    padding-top: env(safe-area-inset-top, 0px);
-  }
+  .side { background: var(--panel); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
   .brand { padding: 16px 18px 8px; }
   .brand h1 { margin: 0; font-size: 20px; font-weight: 700; }
   .brand p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
   .stage { min-width: 0; }
   @media (min-width: 960px) {
-    .app { display: grid; grid-template-columns: 380px 1fr; height: 100vh; height: 100dvh; }
+    .app { display: grid; grid-template-columns: 390px 1fr; height: 100vh; height: 100dvh; }
     .side { display: flex; flex-direction: column; height: 100%; border-bottom: 0; border-right: 1px solid var(--line); }
     .side .scroll { flex: 1; overflow-y: auto; }
     .stage { height: 100%; overflow-y: auto; }
@@ -62,12 +59,14 @@
     display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex: none;
   }
   .body { padding: 2px 18px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .contents { display: contents; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
   .field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
-  .field input[type=number], .field select {
+  .field input[type=number], .field input[type=text], .field select {
     font: inherit; font-size: 15px; color: var(--ink); background: var(--soft); width: 100%;
     border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
   }
+  .field input:disabled { opacity: .6; }
   .field input[type=range] { width: 100%; accent-color: var(--accent); }
   .field input[type=color] { width: 100%; height: 38px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
   .field input[type=file] { font-size: 13px; width: 100%; }
@@ -76,17 +75,6 @@
   }
   .check { display: flex; align-items: center; gap: 8px; font-size: 14px; }
   .check input { width: 18px; height: 18px; accent-color: var(--accent); }
-  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .palette { display: flex; flex-direction: column; gap: 10px; }
-  .presets { display: flex; flex-wrap: wrap; gap: 8px; }
-  .preset {
-    display: flex; align-items: center; gap: 8px; background: var(--soft); color: var(--ink);
-    border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 13px;
-  }
-  .preset:hover { background: var(--line); }
-  .preset .sw { display: inline-flex; }
-  .preset .sw i { width: 14px; height: 14px; display: block; border: 1px solid rgba(0,0,0,.15); }
-  .preset .sw i:first-child { border-radius: 4px 0 0 4px; } .preset .sw i:last-child { border-radius: 0 4px 4px 0; }
   .hint { font-size: 13px; color: var(--muted); margin: 0; }
   .hint b { color: var(--ink); }
   .sub { font-size: 13px; font-weight: 700; color: var(--muted); margin: 4px 0 -4px; }
@@ -101,6 +89,31 @@
   .stepper button:first-child { border-radius: 8px 0 0 8px; border-right: 0; }
   .stepper button:last-child { border-radius: 0 8px 8px 0; border-left: 0; }
   .stepper button:hover { background: var(--line); }
+
+  /* zones */
+  .zhead, .zrow { display: grid; grid-template-columns: 34px 54px 1fr 14px 1fr; gap: 8px; align-items: center; }
+  .zhead { font-size: 12px; color: var(--muted); }
+  .zbadge {
+    width: 34px; height: 34px; border-radius: 8px; background: var(--soft); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px;
+  }
+  .zrow input[type=color] { width: 100%; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+  .zrow input[type=number] {
+    font: inherit; font-size: 15px; color: var(--ink); background: var(--soft); width: 100%; min-width: 0;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px;
+  }
+  .zrow input:disabled { opacity: .6; }
+  .zrow .dash { text-align: center; color: var(--muted); }
+  .zones { display: flex; flex-direction: column; gap: 8px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preset {
+    display: flex; align-items: center; gap: 8px; background: var(--soft); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 13px;
+  }
+  .preset:hover { background: var(--line); }
+  .preset .sw { display: inline-flex; }
+  .preset .sw i { width: 14px; height: 14px; display: block; border: 1px solid rgba(0,0,0,.15); }
+  .preset .sw i:first-child { border-radius: 4px 0 0 4px; } .preset .sw i:last-child { border-radius: 0 4px 4px 0; }
 
   .drop {
     display: flex; align-items: center; gap: 12px; border: 2px dashed var(--line); border-radius: 12px;
@@ -153,10 +166,11 @@
 
   /* ---------- tag ---------- */
   .tag { position: relative; overflow: hidden; color: var(--text-color, #2b2a26);
-    --band: var(--k1-band, #5c9a4a); --body1: var(--k1-body1, #cfe7bd); --body2: var(--k1-body2, #b6d9a0); --ring: var(--band); }
-  .tag.c2 { --band: var(--k2-band, #e2b32a); --body1: var(--k2-body1, #fbe7a0); --body2: var(--k2-body2, #f6d96f); }
-  .tag.c3 { --band: var(--k3-band, #e8905a); --body1: var(--k3-body1, #f9d3b9); --body2: var(--k3-body2, #f4b894); }
-  .tag.c4 { --band: var(--k4-band, #5b9bd5); --body1: var(--k4-body1, #d3e6f6); --body2: var(--k4-body2, #b5d5ee); }
+    --band: var(--k1-band, #5c9a4a); --body1: var(--k1-body1, #cfe7bd); --body2: var(--k1-body2, #b6d9a0);
+    --zink: var(--k1-ink, #fff); }
+  .tag.c2 { --band: var(--k2-band, #e2b32a); --body1: var(--k2-body1, #fbe7a0); --body2: var(--k2-body2, #f6d96f); --zink: var(--k2-ink, #2b2a26); }
+  .tag.c3 { --band: var(--k3-band, #e8905a); --body1: var(--k3-body1, #f9d3b9); --body2: var(--k3-body2, #f4b894); --zink: var(--k3-ink, #2b2a26); }
+  .tag.c4 { --band: var(--k4-band, #5b9bd5); --body1: var(--k4-body1, #d3e6f6); --body2: var(--k4-body2, #b5d5ee); --zink: var(--k4-ink, #fff); }
   .tag.cut { outline: 0.2mm dashed #9a9a9a; outline-offset: 0; }
   .art { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 
@@ -172,16 +186,21 @@
   .hole.off { display: none; }
   .title { text-align: center; font-size: 4.3mm; font-weight: 500; color: inherit; opacity: .7; margin-top: 4mm; line-height: 1; }
   .circle {
-    width: 40mm; height: 40mm; border-radius: 50%; background: #fff;
-    border: 0.7mm solid var(--ring); margin: auto;
+    width: 36mm; height: 36mm; border-radius: 50%; background: #fff;
+    border: 0.7mm solid var(--band); margin: auto;
     display: flex; align-items: center; justify-content: center;
     font-family: var(--num-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif;
     font-weight: var(--num-weight, 700); color: var(--num-color, #2d2b27); line-height: 1; flex: none;
   }
-  .circle.d1 { font-size: 28mm; } .circle.d2 { font-size: 23mm; } .circle.d3 { font-size: 18mm; }
-  .circle.d4 { font-size: 14.5mm; } .circle.d5 { font-size: 11.5mm; }
+  .circle.d1 { font-size: 25mm; } .circle.d2 { font-size: 20.5mm; } .circle.d3 { font-size: 16mm; }
+  .circle.d4 { font-size: 13mm; } .circle.d5 { font-size: 10.5mm; }
+  .zonelab {
+    align-self: center; flex: none; margin-bottom: 6mm; padding: 1.2mm 7mm; border-radius: 20mm;
+    background: var(--band); color: var(--zink); font-size: 7.5mm; font-weight: 700; line-height: 1.25; white-space: nowrap;
+  }
 
-  .art.img { background-repeat: no-repeat; background-size: 100% 100%; }
+  .art.img { background-repeat: no-repeat; background-size: 100% 100%;
+    font-family: var(--text-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif; }
   body.has-img .tag { cursor: crosshair; }
   .num {
     position: absolute; transform: translate(-50%, -50%); line-height: 1; white-space: nowrap; color: var(--num-color, #2d2b27);
@@ -189,6 +208,10 @@
     font-weight: var(--num-weight, 700); display: flex; align-items: center; justify-content: center;
   }
   .num.circ { background: #fff; border-radius: 50%; box-shadow: inset 0 0 0 0.6mm rgba(0,0,0,.18); }
+  .zlab {
+    position: absolute; transform: translate(-50%, -50%); white-space: nowrap; line-height: 1.2; font-weight: 700;
+    padding: 0.15em 0.7em; border-radius: 99mm; background: var(--band); color: var(--zink);
+  }
 
   /* ---------- print ---------- */
   @media print {
@@ -209,7 +232,7 @@
   <aside class="side">
     <header class="brand">
       <h1>🌳 สร้างป้ายติดต้นไม้</h1>
-      <p>ตั้งค่าตามลำดับ 1 → 4 แล้วกดพิมพ์ ดูตัวอย่างได้ทันที</p>
+      <p>ตั้งค่าตามลำดับ 1 → 5 แล้วกดพิมพ์ ดูตัวอย่างได้ทันที</p>
     </header>
 
     <div class="scroll">
@@ -233,35 +256,38 @@
             </div>
           </div>
           <p class="hint" id="padHint"></p>
-          <label class="field def-only">สีป้าย
-            <select id="color">
-              <option value="cycle4">วนสีที่ 1 → 2 → 3 → 4</option>
-              <option value="cycle">วนสีที่ 1 → 2 → 3 (ใช้ 3 สี)</option>
-              <option value="1">ใช้สีที่ 1 ทั้งหมด</option>
-              <option value="2">ใช้สีที่ 2 ทั้งหมด</option>
-              <option value="3">ใช้สีที่ 3 ทั้งหมด</option>
-              <option value="4">ใช้สีที่ 4 ทั้งหมด</option>
-              <option value="range4">แบ่งตามช่วงเลข 4 สี (1–125 / 126–250 / 251–375 / 376–500)</option>
-              <option value="range">แบ่งตามช่วงเลข 3 สี (1–166 / 167–333 / 334–500)</option>
-            </select>
-          </label>
-          <div class="palette def-only">
-            <p class="sub">สีของป้าย (เลือกเองได้)</p>
-            <div class="grid4">
-              <label class="field">สีที่ 1<input id="k1" type="color" value="#5c9a4a"></label>
-              <label class="field">สีที่ 2<input id="k2" type="color" value="#e2b32a"></label>
-              <label class="field">สีที่ 3<input id="k3" type="color" value="#e8905a"></label>
-              <label class="field">สีที่ 4<input id="k4" type="color" value="#5b9bd5"></label>
-            </div>
-            <div class="presets" id="presets"></div>
-            <p class="hint">เลือกสีเข้ม ระบบจะทำสีพื้นอ่อนให้อัตโนมัติ</p>
-          </div>
         </div>
       </details>
 
-      <!-- 2 design -->
+      <!-- 2 zones -->
       <details class="sec" open>
-        <summary><span class="step">2</span>แบบป้าย</summary>
+        <summary><span class="step">2</span>โซนและสี (A B C D)</summary>
+        <div class="body">
+          <label class="check"><input id="zon" type="checkbox" checked> แบ่งเป็นโซน 1 โซน = 1 สี</label>
+          <label class="check"><input id="zauto" type="checkbox" checked> แบ่งช่วงเลขเท่า ๆ กันให้อัตโนมัติ</label>
+
+          <div class="zones">
+            <div class="zhead"><span></span><span>สี</span><span>เลขเริ่ม</span><span></span><span>เลขสุดท้าย</span></div>
+            <div class="zrow"><span class="zbadge">A</span><input id="k1" type="color" value="#5c9a4a" aria-label="สีโซน A"><input id="zf1" type="number" min="1" max="500" aria-label="โซน A เลขเริ่ม"><span class="dash">–</span><input id="zt1" type="number" min="1" max="500" aria-label="โซน A เลขสุดท้าย"></div>
+            <div class="zrow"><span class="zbadge">B</span><input id="k2" type="color" value="#e2b32a" aria-label="สีโซน B"><input id="zf2" type="number" min="1" max="500" aria-label="โซน B เลขเริ่ม"><span class="dash">–</span><input id="zt2" type="number" min="1" max="500" aria-label="โซน B เลขสุดท้าย"></div>
+            <div class="zrow"><span class="zbadge">C</span><input id="k3" type="color" value="#e8905a" aria-label="สีโซน C"><input id="zf3" type="number" min="1" max="500" aria-label="โซน C เลขเริ่ม"><span class="dash">–</span><input id="zt3" type="number" min="1" max="500" aria-label="โซน C เลขสุดท้าย"></div>
+            <div class="zrow"><span class="zbadge">D</span><input id="k4" type="color" value="#5b9bd5" aria-label="สีโซน D"><input id="zf4" type="number" min="1" max="500" aria-label="โซน D เลขเริ่ม"><span class="dash">–</span><input id="zt4" type="number" min="1" max="500" aria-label="โซน D เลขสุดท้าย"></div>
+          </div>
+          <p class="hint" id="zoneHint"></p>
+
+          <div class="presets" id="presets"></div>
+          <p class="hint">เลือกสีเข้ม ระบบจะทำสีพื้นอ่อนให้อัตโนมัติ</p>
+
+          <label class="check"><input id="zshow" type="checkbox" checked> เขียนชื่อโซนบนป้าย</label>
+          <label class="field">คำนำหน้าชื่อโซน (เว้นว่าง = แสดงแค่ตัวอักษร)
+            <input id="zpre" type="text" value="โซน" maxlength="12" autocomplete="off">
+          </label>
+        </div>
+      </details>
+
+      <!-- 3 design -->
+      <details class="sec" open>
+        <summary><span class="step">3</span>แบบป้าย</summary>
         <div class="body">
           <label class="drop" id="drop">
             <span class="thumb" id="thumb"></span>
@@ -270,9 +296,14 @@
           </label>
           <button class="ghost img-only" id="reset" type="button">กลับไปใช้แบบเดิม</button>
 
-          <div class="img-only" style="display:contents">
-            <p class="sub">ตำแหน่งเลขบนรูป</p>
-            <p class="hint">คลิกบนป้ายตัวอย่างตรงจุดที่ต้องการวางเลข หรือเลื่อนปรับเอง</p>
+          <div class="img-only contents">
+            <label class="field">คลิกบนป้ายตัวอย่างเพื่อวาง
+              <select id="place">
+                <option value="num">ตัวเลข</option>
+                <option value="zone">ชื่อโซน</option>
+              </select>
+            </label>
+            <p class="sub">ตำแหน่งตัวเลข</p>
             <label class="field">ซ้าย–ขวา
               <input id="nx" type="range" min="0" max="100" step="0.5" value="50">
             </label>
@@ -282,24 +313,34 @@
             <label class="field">ขนาดเลข
               <input id="ns" type="range" min="5" max="80" step="1" value="30">
             </label>
-            <label class="field">มุมโค้ง (มม.)
+            <label class="check"><input id="circ" type="checkbox"> วงกลมขาวรองหลังเลข</label>
+            <p class="sub">ตำแหน่งชื่อโซน</p>
+            <label class="field">ซ้าย–ขวา
+              <input id="zx" type="range" min="0" max="100" step="0.5" value="50">
+            </label>
+            <label class="field">บน–ล่าง
+              <input id="zy" type="range" min="0" max="100" step="0.5" value="88">
+            </label>
+            <label class="field">ขนาดชื่อโซน
+              <input id="zs" type="range" min="3" max="25" step="0.5" value="8">
+            </label>
+            <label class="field">มุมโค้งของป้าย (มม.)
               <input id="rad" type="number" min="0" max="20" step="0.5" value="0">
             </label>
-            <label class="check"><input id="circ" type="checkbox"> วงกลมขาวรองหลังเลข</label>
           </div>
 
           <label class="check def-only"><input id="hole" type="checkbox" checked> วงกลมรูเจาะด้านบน</label>
         </div>
       </details>
 
-      <!-- 3 fonts -->
+      <!-- 4 fonts -->
       <details class="sec">
-        <summary><span class="step">3</span>ฟอนต์</summary>
+        <summary><span class="step">4</span>ฟอนต์และสีตัวอักษร</summary>
         <div class="body">
           <label class="field">ฟอนต์ของตัวเลข
             <select id="numFont"></select>
           </label>
-          <label class="field def-only">ฟอนต์ของข้อความ "ป้ายติดต้นไม้"
+          <label class="field">ฟอนต์ของข้อความ (ชื่อโซน, "ป้ายติดต้นไม้")
             <select id="textFont"></select>
           </label>
           <label class="check"><input id="numBold" type="checkbox" checked> เลขตัวหนา</label>
@@ -318,9 +359,9 @@
         </div>
       </details>
 
-      <!-- 4 page -->
+      <!-- 5 page -->
       <details class="sec">
-        <summary><span class="step">4</span>จัดหน้ากระดาษ</summary>
+        <summary><span class="step">5</span>จัดหน้ากระดาษ</summary>
         <div class="body">
           <label class="field">กระดาษ
             <select id="orient">
@@ -389,14 +430,23 @@
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var el = {};
-  ['from','to','digits','padHint','perHint','color','cut','hole','cols','rows','margin','gap','orient',
-   'nx','ny','ns','nc','rad','circ','file','drop','thumb','dropText','reset','sheets','stage','zoom',
-   'info','err','printBtn','pageStyle','numFont','textFont','numBold','fontFile','fontList','k1','k2','k3','k4','tc','presets','layoutPresets'
+  ['from','to','digits','padHint','perHint','zoneHint','cut','hole','cols','rows','margin','gap','orient',
+   'zon','zauto','zshow','zpre','k1','k2','k3','k4','zf1','zf2','zf3','zf4','zt1','zt2','zt3','zt4','presets','layoutPresets',
+   'nx','ny','ns','nc','tc','rad','circ','place','zx','zy','zs',
+   'file','drop','thumb','dropText','reset','sheets','stage','zoom',
+   'info','err','printBtn','pageStyle','numFont','textFont','numBold','fontFile','fontList'
   ].forEach(function (k) { el[k] = $(k); });
+
+  var LETTERS = ['A', 'B', 'C', 'D'];
+  var KIN = [el.k1, el.k2, el.k3, el.k4];
+  var ZF = [el.zf1, el.zf2, el.zf3, el.zf4];
+  var ZT = [el.zt1, el.zt2, el.zt3, el.zt4];
 
   var img = null; // {url, w, h, name}
   var DROP_DEFAULT = '<strong>กดเลือกรูป หรือลากรูปมาวาง</strong><br>ใช้รูปป้ายเปล่า เลขจะวางทับให้<br>ไม่ใส่รูป = ใช้แบบเดิม';
   el.dropText.innerHTML = DROP_DEFAULT;
+
+  function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
   // ---------- fonts ----------
   var GOOGLE_FONTS = ['Sarabun','Prompt','Kanit','Mitr','Pridi','Athiti','K2D','Mali','Chakra Petch','Noto Sans Thai','Noto Serif Thai','Itim','Sriracha'];
@@ -438,7 +488,7 @@
     el.fontFile.value = '';
   });
 
-  // ---------- tag colours ----------
+  // ---------- zone colours ----------
   var KDEF = [
     { band: '#5c9a4a', b1: '#cfe7bd', b2: '#b6d9a0' },
     { band: '#e2b32a', b1: '#fbe7a0', b2: '#f6d96f' },
@@ -448,17 +498,20 @@
   var kmod = [false, false, false, false];
   var PRESETS = [
     { name: 'เขียว/เหลือง/ส้ม/ฟ้า (แบบเดิม)', colors: null },
-    { name: 'ฟ้า/ม่วง/ชมพู', colors: ['#4a90c2', '#8e6bbf', '#d9648f', '#e0a030'] },
-    { name: 'เขียว 3 เฉด', colors: ['#2e8b57', '#6aa84f', '#a4c639', '#d4d94a'] },
+    { name: 'ฟ้า/ม่วง/ชมพู/ทอง', colors: ['#4a90c2', '#8e6bbf', '#d9648f', '#e0a030'] },
+    { name: 'เขียว 4 เฉด', colors: ['#2e8b57', '#6aa84f', '#a4c639', '#d4d94a'] },
     { name: 'เทา (ประหยัดหมึก)', colors: ['#5a5a5a', '#848484', '#aaaaaa', '#cfcfcf'] }
   ];
+  function rgb(hex) { var n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
   function mixWhite(hex, t) {
-    var n = parseInt(hex.slice(1), 16), out = '#';
-    [(n >> 16) & 255, (n >> 8) & 255, n & 255].forEach(function (c) {
+    return '#' + rgb(hex).map(function (c) {
       var v = Math.round(c + (255 - c) * t).toString(16);
-      out += (v.length < 2 ? '0' : '') + v;
-    });
-    return out;
+      return (v.length < 2 ? '0' : '') + v;
+    }).join('');
+  }
+  function inkFor(hex) {
+    var c = rgb(hex), lum = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2];
+    return lum > 150 ? '#2b2a26' : '#ffffff';
   }
   PRESETS.forEach(function (pr) {
     var b = document.createElement('button');
@@ -466,14 +519,12 @@
     var cols = pr.colors || KDEF.map(function (k) { return k.band; });
     b.innerHTML = '<span class="sw">' + cols.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join('') + '</span>' + pr.name;
     b.addEventListener('click', function () {
-      [el.k1, el.k2, el.k3, el.k4].forEach(function (inp, i) {
-        inp.value = cols[i]; kmod[i] = !!pr.colors;
-      });
+      KIN.forEach(function (inp, i) { inp.value = cols[i]; kmod[i] = !!pr.colors; });
       render();
     });
     el.presets.appendChild(b);
   });
-  [el.k1, el.k2, el.k3, el.k4].forEach(function (inp, i) {
+  KIN.forEach(function (inp, i) {
     inp.addEventListener('input', function () { kmod[i] = true; render(); });
   });
 
@@ -482,13 +533,6 @@
     var v = parseFloat(input.value);
     if (isNaN(v)) return fallback;
     return Math.min(hi, Math.max(lo, v));
-  }
-  function colorFor(n, mode) {
-    if (mode === 'cycle4') return ((n - 1) % 4) + 1;
-    if (mode === 'range4') return Math.min(4, Math.ceil(n / 125));
-    if (mode === 'cycle') return ((n - 1) % 3) + 1;
-    if (mode === 'range') return n <= 166 ? 1 : (n <= 333 ? 2 : 3);
-    return parseInt(mode, 10);
   }
   function pad(n, d) { var s = String(n); while (s.length < d) s = '0' + s; return s; }
   var r2 = function (x) { return Math.round(x * 1000) / 1000; };
@@ -511,15 +555,45 @@
       ? 'ไม่เติมเลข 0 · ตัวอย่าง: <b>' + a + ', ' + Math.min(b, a + 1) + ' … ' + b + '</b>'
       : 'ตัวอย่าง: <b>' + pad(a, digits) + ', ' + pad(Math.min(b, a + 1), digits) + ' … ' + pad(b, digits) + '</b>';
 
+    // zones
+    var zoneOn = el.zon.checked, auto = el.zauto.checked;
+    el.zauto.disabled = !zoneOn;
+    if (zoneOn && auto) {
+      var size = Math.ceil((b - a + 1) / 4);
+      for (var z = 0; z < 4; z++) {
+        var zs0 = a + z * size, ze0 = Math.min(b, a + (z + 1) * size - 1);
+        ZF[z].value = zs0 <= b ? zs0 : ''; ZT[z].value = zs0 <= b ? ze0 : '';
+      }
+    }
+    for (var z2 = 0; z2 < 4; z2++) { ZF[z2].disabled = ZT[z2].disabled = !zoneOn || auto; KIN[z2].disabled = !zoneOn && z2 > 0; }
+    var zr = [];
+    for (var z3 = 0; z3 < 4; z3++) {
+      var f = parseInt(ZF[z3].value, 10), t = parseInt(ZT[z3].value, 10);
+      zr.push(!isNaN(f) && !isNaN(t) && f <= t ? [f, t] : null);
+    }
+    function zoneOf(n) {
+      if (!zoneOn) return -1;
+      for (var i = 0; i < 4; i++) if (zr[i] && n >= zr[i][0] && n <= zr[i][1]) return i;
+      return -1;
+    }
+    var uncovered = 0;
+    if (zoneOn) for (var m = a; m <= b; m++) if (zoneOn && zoneOf(m) < 0) uncovered++;
+    el.zoneHint.innerHTML = !zoneOn ? 'ปิดโซนอยู่ ทุกป้ายใช้สีของโซน A และไม่มีชื่อโซน'
+      : (uncovered ? '<span style="color:#c0392b">มี ' + uncovered + ' เลขที่ไม่อยู่ในโซนใด (จะไม่มีชื่อโซนบนป้าย)</span>'
+                   : 'ทุกเลขอยู่ในโซนแล้ว');
+    var showLabel = zoneOn && el.zshow.checked;
+    var pre = el.zpre.value.trim();
+
     var margin = num(el.margin, 0, 40, 8), gap = num(el.gap, 0, 20, 3);
     var land = el.orient.value === 'landscape';
     var pw = land ? 297 : 210, ph = land ? 210 : 297;
 
-    [el.k1, el.k2, el.k3, el.k4].forEach(function (inp, i) {
+    KIN.forEach(function (inp, i) {
       var band = inp.value, k = i + 1;
       el.sheets.style.setProperty('--k' + k + '-band', band);
       el.sheets.style.setProperty('--k' + k + '-body1', kmod[i] ? mixWhite(band, 0.72) : KDEF[i].b1);
       el.sheets.style.setProperty('--k' + k + '-body2', kmod[i] ? mixWhite(band, 0.58) : KDEF[i].b2);
+      el.sheets.style.setProperty('--k' + k + '-ink', inkFor(band));
     });
     el.sheets.style.setProperty('--num-color', el.nc.value);
     el.sheets.style.setProperty('--text-color', el.tc.value);
@@ -529,6 +603,7 @@
     if (document.fonts && document.fonts.load) {
       document.fonts.load('400 20px ' + q(el.numFont.value));
       document.fonts.load('700 20px ' + q(el.numFont.value));
+      document.fonts.load('700 20px ' + q(el.textFont.value));
       document.fonts.load('500 20px ' + q(el.textFont.value));
     }
     el.pageStyle.textContent = '@page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 0; }';
@@ -542,8 +617,8 @@
     var cardW = W0 * s, cardH = H0 * s;
 
     var nx = num(el.nx, 0, 100, 50), ny = num(el.ny, 0, 100, 40), ns = num(el.ns, 5, 80, 30);
+    var zx = num(el.zx, 0, 100, 50), zy = num(el.zy, 0, 100, 88), zsz = num(el.zs, 3, 25, 8);
     var radius = img ? num(el.rad, 0, 20, 0) : 4 * s;
-    var mode = el.color.value;
 
     var pageStyle = 'width:' + pw + 'mm;height:' + ph + 'mm;grid-template-columns:repeat(' + cols + ',' + r2(cardW) + 'mm);' +
       'grid-auto-rows:' + r2(cardH) + 'mm;gap:' + gap + 'mm';
@@ -555,26 +630,32 @@
 
     function tagHTML(n) {
       var text = pad(n, digits), d = Math.min(5, text.length);
+      var zi = zoneOf(n);
+      var cls = 'c' + (zi >= 0 ? zi + 1 : 1);
+      var zname = (showLabel && zi >= 0) ? esc(pre ? pre + ' ' + LETTERS[zi] : LETTERS[zi]) : '';
       if (img) {
         var fs = W0 * ns / 100 * IMG_FACTOR[d];
         var numStyle = 'left:' + nx + '%;top:' + ny + '%;font-size:' + r2(fs) + 'mm' +
           (circ ? ';width:' + r2(fs * 1.55) + 'mm;height:' + r2(fs * 1.55) + 'mm' : '');
-        return '<div class="tag' + cut + '" style="' + tagStyle + '"><div class="art img" style="' + artStyle + '">' +
-          '<div class="num' + (circ ? ' circ' : '') + '" style="' + numStyle + '">' + text + '</div></div></div>';
+        return '<div class="tag ' + cls + cut + '" style="' + tagStyle + '"><div class="art img" style="' + artStyle + '">' +
+          '<div class="num' + (circ ? ' circ' : '') + '" style="' + numStyle + '">' + text + '</div>' +
+          (zname ? '<div class="zlab" style="left:' + zx + '%;top:' + zy + '%;font-size:' + r2(zsz) + 'mm">' + zname + '</div>' : '') +
+          '</div></div>';
       }
-      return '<div class="tag c' + colorFor(n, mode) + cut + '" style="' + tagStyle + '"><div class="art def" style="' + artStyle + '">' +
+      return '<div class="tag ' + cls + cut + '" style="' + tagStyle + '"><div class="art def" style="' + artStyle + '">' +
         '<div class="band"><div class="hole' + (holeOn ? '' : ' off') + '"></div></div>' +
         '<div class="title">ป้ายติดต้นไม้</div>' +
         '<div class="circle d' + d + '">' + text + '</div>' +
+        (zname ? '<div class="zonelab">' + zname + '</div>' : '<div style="height:6mm;flex:none"></div>') +
         '</div></div>';
     }
 
     var html = '', count = b - a + 1;
     for (var n = a; n <= b; n++) {
-      var i = n - a;
-      if (i % per === 0) html += '<section class="page" style="' + pageStyle + '">';
+      var i2 = n - a;
+      if (i2 % per === 0) html += '<section class="page" style="' + pageStyle + '">';
       html += tagHTML(n);
-      if (i % per === per - 1 || n === b) html += '</section>';
+      if (i2 % per === per - 1 || n === b) html += '</section>';
     }
     el.sheets.innerHTML = html;
     if (img) {
@@ -609,8 +690,7 @@
       img = { url: url, w: im.naturalWidth, h: im.naturalHeight, name: file.name };
       document.body.classList.add('has-img');
       el.thumb.style.backgroundImage = 'url("' + url + '")';
-      var safe = document.createElement('div'); safe.textContent = file.name;
-      el.dropText.innerHTML = '<strong>' + safe.innerHTML + '</strong><br>กดหรือลากรูปใหม่มาวางเพื่อเปลี่ยน';
+      el.dropText.innerHTML = '<strong>' + esc(file.name) + '</strong><br>กดหรือลากรูปใหม่มาวางเพื่อเปลี่ยน';
       render();
     };
     im.onerror = function () { URL.revokeObjectURL(url); el.err.textContent = 'เปิดรูปนี้ไม่ได้ ลองไฟล์อื่น'; };
@@ -640,8 +720,10 @@
     if (!img) return;
     var tag = e.target.closest('.tag'); if (!tag) return;
     var r = tag.getBoundingClientRect();
-    el.nx.value = Math.round(((e.clientX - r.left) / r.width) * 200) / 2;
-    el.ny.value = Math.round(((e.clientY - r.top) / r.height) * 200) / 2;
+    var x = Math.round(((e.clientX - r.left) / r.width) * 200) / 2;
+    var y = Math.round(((e.clientY - r.top) / r.height) * 200) / 2;
+    if (el.place.value === 'zone') { el.zx.value = x; el.zy.value = y; }
+    else { el.nx.value = x; el.ny.value = y; }
     render();
   });
 
@@ -663,8 +745,10 @@
       render();
     });
   });
-  ['from','to','digits','cols','rows','margin','gap','nx','ny','ns','nc','tc','rad'].forEach(function (k) { el[k].addEventListener('input', render); });
-  ['color','orient','cut','hole','circ','numFont','textFont','numBold','zoom'].forEach(function (k) { el[k].addEventListener('change', render); });
+  ['from','to','digits','cols','rows','margin','gap','nx','ny','ns','nc','tc','rad','zx','zy','zs','zpre']
+    .concat(['zf1','zf2','zf3','zf4','zt1','zt2','zt3','zt4'])
+    .forEach(function (k) { el[k].addEventListener('input', render); });
+  ['orient','cut','hole','circ','numFont','textFont','numBold','zoom','zon','zauto','zshow'].forEach(function (k) { el[k].addEventListener('change', render); });
   el.printBtn.addEventListener('click', function () {
     if (el.err.textContent) return;
     var go = function () { window.print(); };
