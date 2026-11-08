@@ -291,6 +291,9 @@
             <label class="field">เลขสุ่มตัวอย่างที่ (ใช้เมื่อไม่เชื่อมกับเลขป้าย)
               <input id="sampNum" type="text" value="1" maxlength="8" autocomplete="off" disabled>
             </label>
+            <label class="field">เขียนเลขสุ่มตัวอย่างเองแยกแต่ละป้าย (ไม่บังคับ) 1 บรรทัดต่อ 1 ป้าย: เลขป้ายตามด้วยเลขสุ่มตัวอย่าง
+              <textarea id="sampList" rows="4" placeholder="1-1&#10;2-1&#10;3-2&#10;4-2" disabled></textarea>
+            </label>
             <p class="hint" id="linkHint"></p>
 
             <p class="sub">พิกัด GPS (ละติจูด / ลองจิจูด)</p>
@@ -488,7 +491,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var el = {};
   ['from','to','digits','padHint','perHint','cut','hole','cols','rows','margin','gap','orient',
-   'zname','zoneList','zoneHint','oP','oL','title','lblS','lblP','pre','plotList','plotHint','sampLink','sampNum','linkHint','gpsOn','lat','lon','gpsFmt','gpsList','gpsHint','hc','presets','layoutPresets','showLogo','showIco','showFoot','resetSlots',
+   'zname','zoneList','zoneHint','oP','oL','title','lblS','lblP','pre','plotList','plotHint','sampLink','sampNum','sampList','linkHint','gpsOn','lat','lon','gpsFmt','gpsList','gpsHint','hc','presets','layoutPresets','showLogo','showIco','showFoot','resetSlots',
    'nx','ny','ns','nc','tc','rad','circ','place','zx','zy','zs',
    'file','drop','thumb','dropText','reset','sheets','stage','zoom','assetRule',
    'info','err','printBtn','pageStyle','numFont','textFont','numBold','fontFile','fontList'
@@ -733,17 +736,20 @@
     // sample number: linked to the tag number or a fixed value
     var linked = el.sampLink.checked;
     el.sampNum.disabled = linked;
+    el.sampList.disabled = linked;
     var sampFixed = el.sampNum.value.trim();
-    el.linkHint.textContent = linked
-      ? 'เลขสุ่มตัวอย่างเท่ากับเลขพิกัดแปลงเสมอ'
-      : 'เลขสุ่มตัวอย่างใช้ค่า "' + (sampFixed || '—') + '" เท่ากันทุกป้าย ส่วนเลขพิกัดแปลงเป็นอิสระ';
 
     // plot numbers written by hand: "tag number - plot number" per line
-    var plotMap = {}, plotCount = 0;
-    el.plotList.value.split(/\r?\n/).forEach(function (line) {
-      var m = line.trim().match(/^(\d+)\s*[-,=:\t ]+\s*(.+)$/);
-      if (m) { plotMap[parseInt(m[1], 10)] = m[2].trim(); plotCount++; }
-    });
+    function parsePairs(text) {
+      var map = {}, count = 0;
+      text.split(/\r?\n/).forEach(function (line) {
+        var m = line.trim().match(/^(\d+)\s*[-,=:\t ]+\s*(.+)$/);
+        if (m) { map[parseInt(m[1], 10)] = m[2].trim(); count++; }
+      });
+      return { map: map, count: count };
+    }
+    var plotP = parsePairs(el.plotList.value), plotMap = plotP.map, plotCount = plotP.count;
+    var sampP = parsePairs(el.sampList.value), sampMap = sampP.map, sampCount = sampP.count;
     if (!plotCount) {
       el.plotHint.textContent = 'เว้นว่าง = เลขพิกัดแปลงเท่ากับเลขบนป้าย เช่น พิมพ์ 1-155 หมายถึงป้ายเลข 1 ได้พิกัดแปลง 155';
     } else {
@@ -751,6 +757,16 @@
       for (var mm = a; mm <= b; mm++) if (plotMap[mm] === undefined) missing++;
       el.plotHint.textContent = 'ใช้รายการ ' + plotCount + ' รายการ' +
         (missing ? ' · มี ' + missing + ' ป้ายในช่วงที่ไม่มีในรายการ (ใช้เลขบนป้ายแทน)' : ' · ครบทุกป้ายในช่วง');
+    }
+    if (linked) {
+      el.linkHint.textContent = 'เลขสุ่มตัวอย่างเท่ากับเลขพิกัดแปลงเสมอ (เอาติ๊กออกถ้าอยากเขียนแยกกัน)';
+    } else if (sampCount) {
+      var sMissing = 0;
+      for (var sm = a; sm <= b; sm++) if (sampMap[sm] === undefined) sMissing++;
+      el.linkHint.textContent = 'แยกจากเลขพิกัดแปลงแล้ว · ใช้รายการเลขสุ่มตัวอย่าง ' + sampCount + ' รายการ' +
+        (sMissing ? ' · ป้ายที่ไม่อยู่ในรายการใช้ค่า "' + (sampFixed || '—') + '"' : ' · ครบทุกป้ายในช่วง');
+    } else {
+      el.linkHint.textContent = 'แยกจากเลขพิกัดแปลงแล้ว · ทุกป้ายใช้เลขสุ่มตัวอย่าง "' + (sampFixed || '—') + '" (หรือเขียนแยกแต่ละป้ายในช่องด้านบน)';
     }
 
     // GPS: one shared coordinate and/or a per-tag list
@@ -801,7 +817,7 @@
       }
       var bigFs = r2(Math.min(22, 40 / (d * 0.6)));
       var plotVal = plotMap[n] !== undefined ? plotMap[n] : text;
-      var samp = linked ? plotVal : sampFixed;
+      var samp = linked ? plotVal : (sampMap[n] !== undefined ? sampMap[n] : sampFixed);
       var foot = [lblS ? lblS + ' ' + samp : samp, ' / ', lblP ? lblP + ' ' : '', pre + plotVal].join('');
       var c = gpsOn ? (gpsMap[n] || (baseLat && baseLon ? [baseLat, baseLon] : null)) : null;
       var footFs = r2(Math.min(c ? 3.9 : 4.4, 62 / (vlen(foot) * 0.5)));
@@ -880,7 +896,7 @@
       render();
     });
   });
-  ['from','to','digits','cols','rows','margin','gap','nx','ny','ns','nc','tc','rad','zx','zy','zs','zname','title','lblS','lblP','pre','hc','sampNum','lat','lon','gpsList','plotList','zoneList']
+  ['from','to','digits','cols','rows','margin','gap','nx','ny','ns','nc','tc','rad','zx','zy','zs','zname','title','lblS','lblP','pre','hc','sampNum','sampList','lat','lon','gpsList','plotList','zoneList']
     .forEach(function (k) { el[k].addEventListener('input', render); });
   ['cut','hole','circ','numFont','textFont','numBold','zoom','showLogo','showIco','showFoot','sampLink','gpsOn','gpsFmt'].forEach(function (k) { el[k].addEventListener('change', render); });
   el.printBtn.addEventListener('click', function () {
