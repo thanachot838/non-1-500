@@ -188,6 +188,11 @@
     font-family: var(--num-font, "Sarabun"), "Noto Sans Thai", Tahoma, sans-serif;
     font-weight: var(--num-weight, 700); color: var(--num-color, #111); line-height: 1; white-space: nowrap;
   }
+  .psize {
+    left: 27mm; width: 42mm; top: 50.3mm; height: 4.3mm; display: flex; align-items: center; justify-content: center;
+    font-weight: 500; white-space: nowrap; color: var(--text-color, #111);
+  }
+  .art.def.has-size .bignum { top: 28.6mm; }
   .ftr { left: 0; bottom: 0; width: 96mm; height: 11.1mm; background: var(--hc, #0a6a33); color: var(--hink, #fff); }
   .ftr > * { position: absolute; }
   .p-pin { left: 2.6mm; top: 1.6mm; width: 6.4mm; height: 7.9mm; }
@@ -296,6 +301,21 @@
             </label>
             <p class="hint" id="linkHint"></p>
 
+            <p class="sub">ขนาดแปลง (กี่เมตร × กี่เมตร)</p>
+            <label class="check"><input id="szOn" type="checkbox" checked> แสดงขนาดแปลงใต้เลขบนป้าย</label>
+            <div class="grid2">
+              <label class="field">กว้าง (เมตร)
+                <input id="szW" type="text" inputmode="decimal" placeholder="เช่น 10" autocomplete="off">
+              </label>
+              <label class="field">ยาว (เมตร)
+                <input id="szL" type="text" inputmode="decimal" placeholder="เช่น 10" autocomplete="off">
+              </label>
+            </div>
+            <label class="field">ขนาดแปลงแยกแต่ละป้าย (ไม่บังคับ) 1 บรรทัดต่อ 1 ป้าย: เลขป้าย-กว้างxยาว
+              <textarea id="szList" rows="3" placeholder="1-10x10&#10;2-20x20"></textarea>
+            </label>
+            <p class="hint" id="szHint"></p>
+
             <p class="sub">พิกัด GPS (ละติจูด / ลองจิจูด)</p>
             <label class="check"><input id="gpsOn" type="checkbox"> แสดงพิกัดที่ท้ายป้าย</label>
             <div class="grid2">
@@ -342,6 +362,7 @@
               <label class="field">ไอคอนขวา<input type="file" accept="image/*" data-slot="icoR"></label>
             </div>
             <button class="ghost" id="resetSlots" type="button">ใช้รูปเดิมทั้งหมด</button>
+            <p class="hint" id="slotHint"></p>
           </div>
 
           <p class="sub">หรือใช้รูปป้ายของคุณเองทั้งใบ</p>
@@ -491,14 +512,14 @@
   var $ = function (id) { return document.getElementById(id); };
   var el = {};
   ['from','to','digits','padHint','perHint','cut','hole','cols','rows','margin','gap','orient',
-   'zname','zoneList','zoneHint','oP','oL','title','lblS','lblP','pre','plotList','plotHint','sampLink','sampNum','sampList','linkHint','gpsOn','lat','lon','gpsFmt','gpsList','gpsHint','hc','presets','layoutPresets','showLogo','showIco','showFoot','resetSlots',
+   'zname','zoneList','zoneHint','oP','oL','title','lblS','lblP','pre','plotList','plotHint','szOn','szW','szL','szList','szHint','slotHint','sampLink','sampNum','sampList','linkHint','gpsOn','lat','lon','gpsFmt','gpsList','gpsHint','hc','presets','layoutPresets','showLogo','showIco','showFoot','resetSlots',
    'nx','ny','ns','nc','tc','rad','circ','place','zx','zy','zs',
    'file','drop','thumb','dropText','reset','sheets','stage','zoom','assetRule',
    'info','err','printBtn','pageStyle','numFont','textFont','numBold','fontFile','fontList'
   ].forEach(function (k) { el[k] = $(k); });
 
   var img = null; // {url, w, h, name}
-  var custom = {}; // slot -> object URL
+  var custom = {}; // slot -> data URL
   var DROP_DEFAULT = '<strong>กดเลือกรูป หรือลากรูปมาวาง</strong><br>ใช้รูปป้ายเปล่า เลขจะวางทับให้<br>ไม่ใส่รูป = ใช้แบบเดิม';
   el.dropText.innerHTML = DROP_DEFAULT;
 
@@ -555,37 +576,68 @@
     if (img) css += '.art.img{background-image:url("' + img.url + '")}\n';
     el.assetRule.textContent = css;
   }
+  // read an image file -> (downscaled) data URL, so it works wherever the page is hosted
+  function readImage(file, maxDim, cb) {
+    var isJpeg = /\.(jpe?g|jfif|pjpeg|pjp)$/i.test(file.name) || file.type === 'image/jpeg';
+    var fr = new FileReader();
+    fr.onerror = function () { cb(null); };
+    fr.onload = function () {
+      var data = fr.result;
+      if (!/^data:image\//.test(data)) data = data.replace(/^data:[^;,]*/, 'data:' + (isJpeg ? 'image/jpeg' : 'image/png'));
+      var im = new Image();
+      im.onload = function () {
+        var w = im.naturalWidth, h = im.naturalHeight;
+        if (!w || !h) { cb(null); return; }
+        var sc = Math.min(1, maxDim / Math.max(w, h));
+        var c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(w * sc)); c.height = Math.max(1, Math.round(h * sc));
+        var url = data;
+        try {
+          var ctx = c.getContext('2d');
+          if (isJpeg) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); }
+          ctx.drawImage(im, 0, 0, c.width, c.height);
+          url = c.toDataURL(isJpeg ? 'image/jpeg' : 'image/png', 0.92);
+        } catch (e) { /* keep the original data URL */ }
+        cb({ url: url, w: w, h: h });
+      };
+      im.onerror = function () { cb(null); };
+      im.src = data;
+    };
+    fr.readAsDataURL(file);
+  }
+
+  var slotNames = { logoL: 'โลโก้ซ้าย', logoR: 'โลโก้ขวา', icoL: 'ไอคอนซ้าย', icoR: 'ไอคอนขวา' };
+  var slotDone = {};
   Array.prototype.forEach.call(document.querySelectorAll('input[data-slot]'), function (inp) {
     inp.addEventListener('change', function () {
       var f = inp.files[0]; if (!f) return;
-      if (!/^image\//.test(f.type)) { el.err.textContent = 'ไฟล์ต้องเป็นรูปภาพ'; inp.value = ''; return; }
       var slot = inp.getAttribute('data-slot');
-      if (custom[slot]) URL.revokeObjectURL(custom[slot]);
-      custom[slot] = URL.createObjectURL(f);
-      updateAssetRule();
+      readImage(f, 800, function (r) {
+        if (!r) { el.err.textContent = 'เปิดรูป "' + f.name + '" ไม่ได้ ลองไฟล์ PNG หรือ JPG'; inp.value = ''; return; }
+        el.err.textContent = '';
+        custom[slot] = r.url; slotDone[slot] = true;
+        el.slotHint.textContent = 'เปลี่ยนรูปแล้ว: ' + Object.keys(slotDone).map(function (k) { return slotNames[k]; }).join(', ');
+        updateAssetRule();
+      });
     });
   });
   el.resetSlots.addEventListener('click', function () {
-    Object.keys(custom).forEach(function (k) { URL.revokeObjectURL(custom[k]); });
-    custom = {};
+    custom = {}; slotDone = {};
+    el.slotHint.textContent = '';
     Array.prototype.forEach.call(document.querySelectorAll('input[data-slot]'), function (i) { i.value = ''; });
     updateAssetRule();
   });
 
   function loadImage(file) {
-    if (!file || !/^image\//.test(file.type)) { el.err.textContent = 'ไฟล์ต้องเป็นรูปภาพ (JPG, PNG, WEBP)'; return; }
-    var url = URL.createObjectURL(file);
-    var im = new Image();
-    im.onload = function () {
-      if (img) URL.revokeObjectURL(img.url);
-      img = { url: url, w: im.naturalWidth, h: im.naturalHeight, name: file.name };
+    if (!file) return;
+    readImage(file, 2200, function (r) {
+      if (!r) { el.err.textContent = 'เปิดรูปนี้ไม่ได้ ลองไฟล์ JPG, PNG หรือ WEBP'; return; }
+      img = { url: r.url, w: r.w, h: r.h, name: file.name };
       document.body.classList.add('has-img');
-      el.thumb.style.backgroundImage = 'url("' + url + '")';
+      el.thumb.style.backgroundImage = 'url("' + r.url + '")';
       el.dropText.innerHTML = '<strong>' + esc(file.name) + '</strong><br>กดหรือลากรูปใหม่มาวางเพื่อเปลี่ยน';
       render();
-    };
-    im.onerror = function () { URL.revokeObjectURL(url); el.err.textContent = 'เปิดรูปนี้ไม่ได้ ลองไฟล์อื่น'; };
-    im.src = url;
+    });
   }
   el.file.addEventListener('change', function () { if (el.file.files[0]) loadImage(el.file.files[0]); el.file.value = ''; });
   ['dragenter', 'dragover'].forEach(function (ev) {
@@ -599,7 +651,6 @@
     if (f) loadImage(f);
   });
   el.reset.addEventListener('click', function () {
-    if (img) URL.revokeObjectURL(img.url);
     img = null;
     document.body.classList.remove('has-img');
     el.thumb.style.backgroundImage = '';
@@ -750,6 +801,24 @@
     }
     var plotP = parsePairs(el.plotList.value), plotMap = plotP.map, plotCount = plotP.count;
     var sampP = parsePairs(el.sampList.value), sampMap = sampP.map, sampCount = sampP.count;
+
+    // plot size in metres: one default for every tag, optional per-tag list
+    var szOn = el.szOn.checked, szW = el.szW.value.trim(), szL = el.szL.value.trim();
+    var szP = parsePairs(el.szList.value), szMap = szP.map, szCount = szP.count;
+    function sizeStr(w, l) { return 'ขนาดแปลง ' + w + ' × ' + l + ' เมตร'; }
+    function sizeFor(n) {
+      if (!szOn) return '';
+      var v = szMap[n];
+      if (v !== undefined) {
+        var m = v.match(/^([\d.]+)\s*[xX×*]\s*([\d.]+)\s*(?:ม\.?|เมตร|m)?$/);
+        return m ? sizeStr(m[1], m[2]) : 'ขนาดแปลง ' + v;
+      }
+      return (szW && szL) ? sizeStr(szW, szL) : '';
+    }
+    el.szHint.textContent = !szOn ? 'ปิดอยู่ ไม่แสดงขนาดแปลงบนป้าย'
+      : (szW && szL) ? 'ทุกป้ายแสดง "' + sizeStr(szW, szL) + '"' + (szCount ? ' · ยกเว้น ' + szCount + ' ป้ายที่ตั้งขนาดแยกไว้' : '')
+      : szCount ? 'แสดงเฉพาะป้ายที่อยู่ในรายการ (' + szCount + ' รายการ) กรอกกว้างและยาวด้านบนถ้าอยากให้ทุกป้ายมี'
+      : 'กรอกกว้างและยาว (เมตร) เพื่อแสดงขนาดแปลงบนป้าย เช่น 10 และ 10';
     if (!plotCount) {
       el.plotHint.textContent = 'เว้นว่าง = เลขพิกัดแปลงเท่ากับเลขบนป้าย เช่น พิมพ์ 1-155 หมายถึงป้ายเลข 1 ได้พิกัดแปลง 155';
     } else {
@@ -823,7 +892,8 @@
       var footFs = r2(Math.min(c ? 3.9 : 4.4, 62 / (vlen(foot) * 0.5)));
       var line2 = c ? coordText(c) : '';
       var line2Fs = c ? r2(Math.min(3.2, 62 / (vlen(line2) * 0.5))) : 0;
-      return '<div class="tag' + cut + '" style="' + tagStyle + '"><div class="art def" style="' + artStyle + '">' +
+      var szTxt = sizeFor(n);
+      return '<div class="tag' + cut + '" style="' + tagStyle + '"><div class="art def' + (szTxt ? ' has-size' : '') + '" style="' + artStyle + '">' +
         '<div class="hdr">' +
           (holeOn ? '<i class="hole l"></i><i class="hole r"></i>' : '') +
           (showLogo ? '<span class="img a-logoL p-logoL"></span><span class="img a-logoR p-logoR"></span>' : '') +
@@ -832,6 +902,7 @@
         (zoneRaw ? '<div class="zname" style="font-size:' + zoneFs + 'mm">' + zoneHTML + '</div>' : '') +
         (showIco ? '<span class="img a-icoL p-icoL"></span><span class="img a-icoR p-icoR"></span>' : '') +
         '<div class="bignum" style="font-size:' + bigFs + 'mm">' + text + '</div>' +
+        (szTxt ? '<div class="psize" style="font-size:' + r2(Math.min(3.6, 42 / (vlen(szTxt) * 0.5))) + 'mm">' + esc(szTxt) + '</div>' : '') +
         '<div class="ftr">' +
           '<span class="img a-pin p-pin"></span>' +
           '<span class="ftxt"><span style="font-size:' + footFs + 'mm">' + esc(foot) + '</span>' +
@@ -896,9 +967,9 @@
       render();
     });
   });
-  ['from','to','digits','cols','rows','margin','gap','nx','ny','ns','nc','tc','rad','zx','zy','zs','zname','title','lblS','lblP','pre','hc','sampNum','sampList','lat','lon','gpsList','plotList','zoneList']
+  ['from','to','digits','cols','rows','margin','gap','nx','ny','ns','nc','tc','rad','zx','zy','zs','zname','title','lblS','lblP','pre','hc','sampNum','sampList','lat','lon','gpsList','plotList','zoneList','szW','szL','szList']
     .forEach(function (k) { el[k].addEventListener('input', render); });
-  ['cut','hole','circ','numFont','textFont','numBold','zoom','showLogo','showIco','showFoot','sampLink','gpsOn','gpsFmt'].forEach(function (k) { el[k].addEventListener('change', render); });
+  ['cut','hole','circ','numFont','textFont','numBold','zoom','showLogo','showIco','showFoot','sampLink','gpsOn','gpsFmt','szOn'].forEach(function (k) { el[k].addEventListener('change', render); });
   el.printBtn.addEventListener('click', function () {
     if (el.err.textContent) return;
     var go = function () { window.print(); };
