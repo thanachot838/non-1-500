@@ -138,6 +138,13 @@
     border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted);
   }
   .toolbar label { display: flex; align-items: center; gap: 8px; }
+  .seg { display: inline-flex; }
+  .seg button {
+    background: var(--panel); color: var(--ink); border: 1px solid var(--line); padding: 5px 14px; font-size: 13px;
+  }
+  .seg button:first-child { border-radius: 8px 0 0 8px; }
+  .seg button:last-child { border-radius: 0 8px 8px 0; border-left: 0; }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .toolbar select {
     font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
     border-radius: 8px; padding: 5px 8px;
@@ -253,9 +260,13 @@
       <details class="sec" open>
         <summary><span class="step">2</span>ข้อความบนป้าย</summary>
         <div class="body">
-          <label class="field">ชื่อโซน (พิมพ์เองได้ เว้นว่าง = ไม่แสดง)
+          <label class="field">ชื่อโซนตั้งต้น (ใช้กับป้ายที่ไม่อยู่ในรายการด้านล่าง เว้นว่าง = ไม่แสดง)
             <input id="zname" type="text" value="โซน B: อาคารเรียน" maxlength="60" autocomplete="off">
           </label>
+          <label class="field">ตั้งชื่อโซนแยกตามเลขป้าย (ไม่บังคับ) 1 บรรทัดต่อ 1 โซน: เลขป้าย ช่วงเลข หรือหลายเลขคั่นด้วย , ตามด้วยชื่อโซน
+            <textarea id="zoneList" rows="4" placeholder="1-50 โซน A: สนามหญ้า&#10;51-100 โซน B: อาคารเรียน&#10;1,3 โซน บ้านพัก&#10;101,103,110-115 โซน C: สวนหย่อม"></textarea>
+          </label>
+          <p class="hint" id="zoneHint"></p>
           <label class="field def-only">ข้อความหัวป้าย (ขึ้นบรรทัดใหม่ได้)
             <textarea id="title" rows="2">โครงการวิจัยนิเวศวิทยาโรงเรียน
 ข้อมูลกักเก็บคาร์บอน</textarea>
@@ -272,7 +283,11 @@
             <label class="field">คำนำหน้าเลขพิกัดแปลง (เช่น B1-)
               <input id="pre" type="text" value="" maxlength="12" autocomplete="off" placeholder="เว้นว่างได้">
             </label>
-            <label class="check"><input id="sampLink" type="checkbox" checked> เลขสุ่มตัวอย่างเท่ากับเลขบนป้าย</label>
+            <label class="field">เขียนเลขพิกัดแปลงเอง (ไม่บังคับ) 1 บรรทัดต่อ 1 ป้าย: เลขป้ายตามด้วยเลขพิกัดแปลง
+              <textarea id="plotList" rows="5" placeholder="1-155&#10;2-19&#10;3-75&#10;4-99&#10;5-128"></textarea>
+            </label>
+            <p class="hint" id="plotHint"></p>
+            <label class="check"><input id="sampLink" type="checkbox" checked> เลขสุ่มตัวอย่างเท่ากับเลขพิกัดแปลง</label>
             <label class="field">เลขสุ่มตัวอย่างที่ (ใช้เมื่อไม่เชื่อมกับเลขป้าย)
               <input id="sampNum" type="text" value="1" maxlength="8" autocomplete="off" disabled>
             </label>
@@ -447,7 +462,11 @@
 
   <main class="stage" id="stage">
     <div class="toolbar">
-      <span>ตัวอย่างหน้ากระดาษ</span>
+      <span>ตัวอย่างหน้ากระดาษ A4</span>
+      <div class="seg" role="group" aria-label="ทิศทางกระดาษ">
+        <button type="button" id="oP" aria-pressed="true">แนวตั้ง</button>
+        <button type="button" id="oL" aria-pressed="false">แนวนอน</button>
+      </div>
       <label>ขนาดตัวอย่าง
         <select id="zoom">
           <option value="fit">พอดีความกว้าง</option>
@@ -469,7 +488,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var el = {};
   ['from','to','digits','padHint','perHint','cut','hole','cols','rows','margin','gap','orient',
-   'zname','title','lblS','lblP','pre','sampLink','sampNum','linkHint','gpsOn','lat','lon','gpsFmt','gpsList','gpsHint','hc','presets','layoutPresets','showLogo','showIco','showFoot','resetSlots',
+   'zname','zoneList','zoneHint','oP','oL','title','lblS','lblP','pre','plotList','plotHint','sampLink','sampNum','linkHint','gpsOn','lat','lon','gpsFmt','gpsList','gpsHint','hc','presets','layoutPresets','showLogo','showIco','showFoot','resetSlots',
    'nx','ny','ns','nc','tc','rad','circ','place','zx','zy','zs',
    'file','drop','thumb','dropText','reset','sheets','stage','zoom','assetRule',
    'info','err','printBtn','pageStyle','numFont','textFont','numBold','fontFile','fontList'
@@ -640,6 +659,8 @@
     var margin = num(el.margin, 0, 40, 8), gap = num(el.gap, 0, 20, 3);
     var land = el.orient.value === 'landscape';
     var pw = land ? 297 : 210, ph = land ? 210 : 297;
+    el.oP.setAttribute('aria-pressed', land ? 'false' : 'true');
+    el.oL.setAttribute('aria-pressed', land ? 'true' : 'false');
 
     var hc = el.hc.value;
     el.sheets.style.setProperty('--hc', hc);
@@ -679,9 +700,31 @@
     var circ = el.circ.checked;
 
     // text pieces shared by every tag
-    var zoneRaw = el.zname.value.trim();
-    var zoneHTML = esc(zoneRaw);
-    var zoneFs = r2(Math.min(9.2, 88 / (vlen(zoneRaw) * 0.56)));
+    var zoneDefault = el.zname.value.trim();
+    var zoneMap = {}, zoneRules = 0;
+    el.zoneList.value.split(/\r?\n/).forEach(function (line) {
+      // selector = numbers and/or ranges separated by commas (1,3,5-8), then the zone name
+      var m = line.trim().match(/^(\d+(?:\s*-\s*\d+)?(?:\s*,\s*\d+(?:\s*-\s*\d+)?)*)\s*[=,:\t ]\s*(.+)$/);
+      if (!m) return;
+      var zn = m[2].trim(); if (!zn) return;
+      var applied = false;
+      m[1].split(',').forEach(function (part) {
+        var r = part.trim().match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+        if (!r) return;
+        var lo = parseInt(r[1], 10), hi = r[2] ? parseInt(r[2], 10) : lo;
+        if (hi < lo) { var t = lo; lo = hi; hi = t; }
+        for (var k = lo; k <= Math.min(hi, 500); k++) zoneMap[k] = zn;
+        applied = true;
+      });
+      if (applied) zoneRules++;
+    });
+    function zoneOf(n) { return zoneMap[n] !== undefined ? zoneMap[n] : zoneDefault; }
+    var zoneNamed = 0;
+    for (var zz = a; zz <= b; zz++) if (zoneMap[zz] !== undefined) zoneNamed++;
+    el.zoneHint.textContent = !zoneRules
+      ? 'เว้นว่าง = ทุกป้ายใช้ชื่อโซนตั้งต้น เช่น 1-50 โซน A หมายถึงป้ายเลข 1 ถึง 50, 1,3 โซน บ้านพัก หมายถึงป้ายเลข 1 และ 3 (ผสมกันได้ เช่น 1,3,5-8)'
+      : 'ตั้งชื่อแยกแล้ว ' + zoneRules + ' รายการ ครอบคลุม ' + zoneNamed + ' ป้ายในช่วงที่พิมพ์' +
+        (zoneNamed < b - a + 1 ? ' · ป้ายที่เหลือใช้ชื่อโซนตั้งต้น' : '');
     var titleLines = el.title.value.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
     var titleHTML = titleLines.map(esc).join('<br>');
     var titleMax = titleLines.reduce(function (m, l) { return Math.max(m, vlen(l)); }, 1);
@@ -692,8 +735,23 @@
     el.sampNum.disabled = linked;
     var sampFixed = el.sampNum.value.trim();
     el.linkHint.textContent = linked
-      ? 'เลขสุ่มตัวอย่างและเลขพิกัดแปลงเท่ากับเลขบนป้าย'
-      : 'เลขพิกัดแปลงตามเลขบนป้าย ส่วนเลขสุ่มตัวอย่างใช้ค่า "' + (sampFixed || '—') + '" เท่ากันทุกป้าย';
+      ? 'เลขสุ่มตัวอย่างเท่ากับเลขพิกัดแปลงเสมอ'
+      : 'เลขสุ่มตัวอย่างใช้ค่า "' + (sampFixed || '—') + '" เท่ากันทุกป้าย ส่วนเลขพิกัดแปลงเป็นอิสระ';
+
+    // plot numbers written by hand: "tag number - plot number" per line
+    var plotMap = {}, plotCount = 0;
+    el.plotList.value.split(/\r?\n/).forEach(function (line) {
+      var m = line.trim().match(/^(\d+)\s*[-,=:\t ]+\s*(.+)$/);
+      if (m) { plotMap[parseInt(m[1], 10)] = m[2].trim(); plotCount++; }
+    });
+    if (!plotCount) {
+      el.plotHint.textContent = 'เว้นว่าง = เลขพิกัดแปลงเท่ากับเลขบนป้าย เช่น พิมพ์ 1-155 หมายถึงป้ายเลข 1 ได้พิกัดแปลง 155';
+    } else {
+      var missing = 0;
+      for (var mm = a; mm <= b; mm++) if (plotMap[mm] === undefined) missing++;
+      el.plotHint.textContent = 'ใช้รายการ ' + plotCount + ' รายการ' +
+        (missing ? ' · มี ' + missing + ' ป้ายในช่วงที่ไม่มีในรายการ (ใช้เลขบนป้ายแทน)' : ' · ครบทุกป้ายในช่วง');
+    }
 
     // GPS: one shared coordinate and/or a per-tag list
     var gpsOn = el.gpsOn.checked;
@@ -730,6 +788,8 @@
 
     function tagHTML(n) {
       var text = pad(n, digits), d = Math.min(5, text.length);
+      var zoneRaw = zoneOf(n), zoneHTML = esc(zoneRaw);
+      var zoneFs = r2(Math.min(9.2, 88 / (vlen(zoneRaw) * 0.56)));
       if (img) {
         var fs = W0 * ns / 100 * IMG_FACTOR[d];
         var numStyle = 'left:' + nx + '%;top:' + ny + '%;font-size:' + r2(fs) + 'mm' +
@@ -740,8 +800,9 @@
           '</div></div>';
       }
       var bigFs = r2(Math.min(22, 40 / (d * 0.6)));
-      var samp = linked ? text : sampFixed;
-      var foot = [lblS ? lblS + ' ' + samp : samp, ' / ', lblP ? lblP + ' ' : '', pre + text].join('');
+      var plotVal = plotMap[n] !== undefined ? plotMap[n] : text;
+      var samp = linked ? plotVal : sampFixed;
+      var foot = [lblS ? lblS + ' ' + samp : samp, ' / ', lblP ? lblP + ' ' : '', pre + plotVal].join('');
       var c = gpsOn ? (gpsMap[n] || (baseLat && baseLon ? [baseLat, baseLon] : null)) : null;
       var footFs = r2(Math.min(c ? 3.9 : 4.4, 62 / (vlen(foot) * 0.5)));
       var line2 = c ? coordText(c) : '';
@@ -798,6 +859,18 @@
     el.layoutPresets.appendChild(b);
   });
 
+  // ---------- paper orientation ----------
+  function setOrient(v) {
+    el.orient.value = v;
+    // sensible default grid for each orientation (can still be changed in step 5)
+    el.cols.value = v === 'landscape' ? 3 : 2;
+    el.rows.value = v === 'landscape' ? 3 : 4;
+    render();
+  }
+  el.orient.addEventListener('change', function () { setOrient(el.orient.value); });
+  el.oP.addEventListener('click', function () { setOrient('portrait'); });
+  el.oL.addEventListener('click', function () { setOrient('landscape'); });
+
   // ---------- steppers & events ----------
   Array.prototype.forEach.call(document.querySelectorAll('.stepper button'), function (btn) {
     btn.addEventListener('click', function () {
@@ -807,9 +880,9 @@
       render();
     });
   });
-  ['from','to','digits','cols','rows','margin','gap','nx','ny','ns','nc','tc','rad','zx','zy','zs','zname','title','lblS','lblP','pre','hc','sampNum','lat','lon','gpsList']
+  ['from','to','digits','cols','rows','margin','gap','nx','ny','ns','nc','tc','rad','zx','zy','zs','zname','title','lblS','lblP','pre','hc','sampNum','lat','lon','gpsList','plotList','zoneList']
     .forEach(function (k) { el[k].addEventListener('input', render); });
-  ['orient','cut','hole','circ','numFont','textFont','numBold','zoom','showLogo','showIco','showFoot','sampLink','gpsOn','gpsFmt'].forEach(function (k) { el[k].addEventListener('change', render); });
+  ['cut','hole','circ','numFont','textFont','numBold','zoom','showLogo','showIco','showFoot','sampLink','gpsOn','gpsFmt'].forEach(function (k) { el[k].addEventListener('change', render); });
   el.printBtn.addEventListener('click', function () {
     if (el.err.textContent) return;
     var go = function () { window.print(); };
